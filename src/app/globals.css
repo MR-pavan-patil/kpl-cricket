@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-blue: #2563eb;
+  --color-brand-green: #16a34a;
+  --color-brand-red: #dc2626;
+  --color-brand-light: #f8fafc;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #f8fafc;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #ffc107;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Glassmorphism utility updated for light mode premium feel */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-card {
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 20px rgba(148, 163, 184, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(148, 163, 184, 0.15);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Premium sports border highlights */
+.neon-border-green {
+  border-color: #16a34a;
+  box-shadow: 0 0 15px rgba(22, 163, 74, 0.08);
+}
+
+.neon-border-gold {
+  border-color: #ffc107;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.08);
+}
+
+/* fadeInUp animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Smooth custom scrollbar for white theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
