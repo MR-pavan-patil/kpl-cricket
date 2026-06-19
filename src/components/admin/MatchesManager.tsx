@@ -177,7 +177,7 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
                   {/* Card Header Info */}
                   <div className="flex justify-between items-center text-xs text-slate-500 pb-3 border-b border-slate-100">
                     <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 font-semibold text-slate-600">
+                      <span suppressHydrationWarning className="flex items-center gap-1 font-semibold text-slate-600">
                         <Calendar className="h-3.5 w-3.5 text-blue-600" />
                         {new Date(match.match_date).toLocaleDateString()}
                       </span>

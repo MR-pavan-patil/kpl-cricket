@@ -865,7 +865,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                                     <td className="p-3.5 text-slate-600 truncate max-w-[150px]" title={item.result}>
                                       {item.result}
                                     </td>
-                                    <td className="p-3.5 pr-5 text-right text-slate-500">{item.date}</td>
+                                    <td suppressHydrationWarning className="p-3.5 pr-5 text-right text-slate-500">{item.date}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -879,7 +879,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                             <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-150 shadow-xs space-y-2.5">
                               <div className="flex justify-between items-center">
                                 <span className="font-extrabold text-slate-900 text-xs truncate max-w-[170px]">{item.opponent}</span>
-                                <span className="text-[9px] text-slate-400 font-bold">{item.date}</span>
+                                <span suppressHydrationWarning className="text-[9px] text-slate-400 font-bold">{item.date}</span>
                               </div>
                               
                               <div className="grid grid-cols-2 gap-2 text-center text-[10px] bg-slate-50 p-2.5 rounded-xl border border-slate-150">

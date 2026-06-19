@@ -372,7 +372,7 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
                     </div>
 
                     <div className="pt-3 border-t border-slate-105 flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      <span>Created: {new Date(team.created_at).toLocaleDateString()}</span>
+                      <span suppressHydrationWarning>Created: {new Date(team.created_at).toLocaleDateString()}</span>
                       <span className="flex items-center gap-0.5 text-blue-600 hover:text-blue-500 font-extrabold transition-colors">
                         Squad ({teamPlayers.length}) <ChevronRight className="h-3.5 w-3.5" />
                       </span>

@@ -165,9 +165,9 @@ export default function SetupClientForm({
                 onChange={(e) => setOversLimit(parseInt(e.target.value, 10))}
                 className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-255 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600 font-bold cursor-pointer"
               >
-                {[2, 3, 5, 7, 10, 12, 15, 20, 50].map((ov) => (
+                {Array.from({ length: 50 }, (_, i) => i + 1).map((ov) => (
                   <option key={ov} value={ov}>
-                    {ov} Overs
+                    {ov} {ov === 1 ? 'Over' : 'Overs'}
                   </option>
                 ))}
               </select>
@@ -180,9 +180,9 @@ export default function SetupClientForm({
                 onChange={(e) => setPlayersCount(parseInt(e.target.value, 10))}
                 className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-255 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600 font-bold cursor-pointer"
               >
-                {[5, 6, 7, 8, 9, 10, 11].map((pc) => (
+                {Array.from({ length: 10 }, (_, i) => i + 2).map((pc) => (
                   <option key={pc} value={pc}>
-                    {pc} Players (XI)
+                    {pc} Players
                   </option>
                 ))}
               </select>

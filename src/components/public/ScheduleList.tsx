@@ -121,7 +121,7 @@ export default function ScheduleList({ initialMatches }: ScheduleListProps) {
               >
                 {/* Time & Venue */}
                 <div className="flex flex-col gap-1 sm:w-1/4">
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500 font-bold uppercase tracking-wider">
+                  <span suppressHydrationWarning className="flex items-center gap-1.5 text-xs text-slate-500 font-bold uppercase tracking-wider">
                     <Calendar className="h-3.5 w-3.5 text-blue-600" />
                     {new Date(match.match_date).toLocaleDateString(undefined, {
                       weekday: 'short',
@@ -129,7 +129,7 @@ export default function ScheduleList({ initialMatches }: ScheduleListProps) {
                       day: 'numeric',
                     })}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-bold">
+                  <span suppressHydrationWarning className="text-[10px] text-slate-400 font-bold">
                     {new Date(match.match_date).toLocaleTimeString(undefined, {
                       hour: '2-digit',
                       minute: '2-digit',
