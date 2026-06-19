@@ -2,6 +2,7 @@ import Header from '@/components/public/Header'
 import { createClient } from '@/utils/supabase/server'
 import { Trophy, BarChart3, Award, Shield, User, Star } from 'lucide-react'
 import { Team, Player, Match } from '@/types'
+import { calculateTeamNRR } from '@/utils/nrr'
 
 export const revalidate = 0
 
@@ -9,6 +10,7 @@ export default async function StatsPage() {
   let teams: Team[] = []
   let players: Player[] = []
   let completedMatches: Match[] = []
+  let matchPlayers: { match_id: string; team_id: string }[] = []
 
   try {
     const supabase = await createClient()
@@ -30,6 +32,10 @@ export default async function StatsPage() {
       .select('*')
       .gt('matches_played', 0)
     players = playersData || []
+
+    // Fetch match players for NRR calculation
+    const { data: matchPlayersData } = await supabase.from('match_players').select('match_id, team_id')
+    matchPlayers = matchPlayersData || []
   } catch (err) {
     console.error('Failed to load stats page data:', err)
   }
@@ -43,6 +49,7 @@ export default async function StatsPage() {
     const drawn = teamMatches.filter((m) => !m.winner_id).length
     const lost = teamMatches.length - won - drawn
     const points = won * 2 + drawn * 1
+    const nrr = calculateTeamNRR(team.id, completedMatches, matchPlayers)
 
     return {
       team,
@@ -51,11 +58,12 @@ export default async function StatsPage() {
       lost,
       drawn,
       points,
+      nrr,
     }
   })
 
-  // Sort by points desc, then won desc
-  pointsTable.sort((a, b) => b.points - a.points || b.won - a.won)
+  // Sort by points desc, then won desc, then nrr desc
+  pointsTable.sort((a, b) => b.points - a.points || b.won - a.won || b.nrr - a.nrr)
 
   // Batting Leaderboards
   const topRuns = [...players].sort((a, b) => b.runs - a.runs).slice(0, 5)
@@ -146,6 +154,7 @@ export default async function StatsPage() {
                       <th className="px-2 py-3.5 sm:p-4 text-center">Won</th>
                       <th className="px-2 py-3.5 sm:p-4 text-center">Lost</th>
                       <th className="px-2 py-3.5 sm:p-4 text-center">Tied/N/R</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center text-slate-500 w-24">NRR</th>
                       <th className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-650 w-24">Points</th>
                     </tr>
                   </thead>
@@ -195,6 +204,9 @@ export default async function StatsPage() {
                             {row.lost}
                           </td>
                           <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.drawn}</td>
+                          <td className={`px-2 py-3.5 sm:p-4 text-center font-semibold text-xs ${row.nrr > 0 ? 'text-emerald-600' : row.nrr < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+                            {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
+                          </td>
                           <td className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-600 text-base">
                             {row.points}
                           </td>

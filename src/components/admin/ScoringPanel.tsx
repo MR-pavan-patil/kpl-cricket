@@ -368,9 +368,23 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
       </section>
 
       {error && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold flex items-center gap-2">
-          <AlertCircle className="h-4.5 w-4.5" />
-          <span>{error}</span>
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-[100] animate-fade-in">
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setError(null)} />
+          <div className="relative bg-white rounded-3xl border border-slate-150 w-full max-w-sm p-6 sm:p-7 shadow-2xl text-center flex flex-col items-center gap-4 z-10 animate-zoom-in">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <AlertCircle className="h-6 w-6 stroke-[2.5]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-slate-905 uppercase tracking-wider">Action Required</h3>
+              <p className="text-xs text-slate-550 font-bold leading-relaxed">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="mt-2 w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+            >
+              Okay, got it
+            </button>
+          </div>
         </div>
       )}
 

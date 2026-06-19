@@ -154,7 +154,9 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
     return { error: mPlayersError.message }
   }
 
-  const players: Player[] = (mPlayersData || []).map((mp: any) => mp.player)
+  const players: Player[] = (mPlayersData || [])
+    .map((mp: any) => mp.player)
+    .filter(Boolean)
 
   // 3. Append ball
   const updatedLog = [...(match.balls_log || []), ball]
@@ -252,9 +254,14 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
 
   const isBattingFirstInnings = currentBattingTeamId === teamBattingFirstId
 
+  const team1SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team1_id).length || match.players_count
+  const team2SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team2_id).length || match.players_count
+  const battingFirstTeamPlayersCount = teamBattingFirstId === match.team1_id ? team1SquadCount : team2SquadCount
+  const battingSecondTeamPlayersCount = teamBattingSecondId === match.team1_id ? team1SquadCount : team2SquadCount
+
   if (inningsNumber === 1) {
     const isFirstInningsOver =
-      currentInningsScore.totalWickets >= match.players_count - 1 ||
+      currentInningsScore.totalWickets >= battingFirstTeamPlayersCount - 1 ||
       currentInningsScore.totalBalls >= match.overs_limit * 6
 
     if (isFirstInningsOver) {
@@ -273,7 +280,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
     if (currentBattingRuns >= target) {
       matchStatus = 'completed'
       winnerId = teamBattingSecondId
-      const wicketsLeft = match.players_count - currentBattingWickets
+      const wicketsLeft = battingSecondTeamPlayersCount - currentBattingWickets
       resultDesc = `${teamBattingSecondName} won by ${wicketsLeft} wickets`
       currentBattingTeamId = null
       nextStrikerId = null as any
@@ -282,7 +289,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
     } else {
       // B. Check if second innings is over (all out or overs complete)
       const isSecondInningsOver =
-        currentBattingWickets >= match.players_count - 1 ||
+        currentBattingWickets >= battingSecondTeamPlayersCount - 1 ||
         currentBattingBallsCount >= match.overs_limit * 6
 
       if (isSecondInningsOver) {
@@ -375,7 +382,9 @@ export async function undoMatchEngineBall(matchId: string) {
     return { error: mPlayersError.message }
   }
 
-  const players: Player[] = (mPlayersData || []).map((mp: any) => mp.player)
+  const players: Player[] = (mPlayersData || [])
+    .map((mp: any) => mp.player)
+    .filter(Boolean)
 
   // 4. Calculate everything from scratch (Self-healing recount)
   const innings1Score = calculateScorecard(updatedLog, players, 1)

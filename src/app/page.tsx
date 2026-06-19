@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { Trophy, Users, Calendar, ArrowRight, Activity, MapPin, Award, User, Shield, AlertTriangle, ArrowUpRight, Target } from 'lucide-react'
 import { Team, Player, Match } from '@/types'
 import LiveMatchesRealtime from '@/components/public/LiveMatchesRealtime'
+import { calculateTeamNRR } from '@/utils/nrr'
 
 export const revalidate = 0
 
@@ -11,6 +12,7 @@ export default async function Home() {
   let teams: Team[] = []
   let matches: Match[] = []
   let players: Player[] = []
+  let matchPlayers: { match_id: string; team_id: string }[] = []
   let dbError = false
 
   try {
@@ -33,6 +35,10 @@ export default async function Home() {
       team1: teams.find((t) => t.id === m.team1_id),
       team2: teams.find((t) => t.id === m.team2_id),
     }))
+
+    // Fetch match players for NRR playing XI check
+    const { data: matchPlayersData } = await supabase.from('match_players').select('match_id, team_id')
+    matchPlayers = matchPlayersData || []
   } catch (err) {
     console.error('Database connection or query error:', err)
     dbError = true
@@ -52,6 +58,7 @@ export default async function Home() {
     const drawn = teamMatches.filter((m) => !m.winner_id).length
     const lost = teamMatches.length - won - drawn
     const points = won * 2 + drawn * 1
+    const nrr = calculateTeamNRR(team.id, completedMatches, matchPlayers)
 
     return {
       team,
@@ -60,11 +67,12 @@ export default async function Home() {
       lost,
       drawn,
       points,
+      nrr,
     }
   })
 
-  // Sort by points desc, then won desc
-  pointsTable.sort((a, b) => b.points - a.points || b.won - a.won)
+  // Sort by points desc, then won desc, then nrr desc
+  pointsTable.sort((a, b) => b.points - a.points || b.won - a.won || b.nrr - a.nrr)
   const pointsTablePreview = pointsTable.slice(0, 4)
 
   // Find Top Performers
@@ -205,6 +213,7 @@ export default async function Home() {
                     <th className="p-3.5 text-center">Played</th>
                     <th className="p-3.5 text-center">Won</th>
                     <th className="p-3.5 text-center">Lost</th>
+                    <th className="p-3.5 text-center text-gray-500 w-20">NRR</th>
                     <th className="p-3.5 text-center font-bold text-blue-600 w-16">PTS</th>
                   </tr>
                 </thead>
@@ -230,6 +239,9 @@ export default async function Home() {
                       <td className="p-3.5 text-center text-gray-500">{row.played}</td>
                       <td className="p-3.5 text-center text-emerald-650">{row.won}</td>
                       <td className="p-3.5 text-center text-red-600">{row.lost}</td>
+                      <td className={`p-3.5 text-center font-semibold ${row.nrr > 0 ? 'text-emerald-600' : row.nrr < 0 ? 'text-rose-600' : 'text-gray-500'}`}>
+                        {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
+                      </td>
                       <td className="p-3.5 text-center font-black text-blue-600 text-xs">{row.points}</td>
                     </tr>
                   ))}
