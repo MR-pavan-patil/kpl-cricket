@@ -137,16 +137,16 @@ export default async function StatsPage() {
           ) : (
             <div className="bg-white rounded-3xl border border-slate-150 overflow-hidden shadow-md">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="min-w-[600px] sm:w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
-                      <th className="p-4 pl-6 w-16 text-center">Pos</th>
-                      <th className="p-4">Team</th>
-                      <th className="p-4 text-center">Played</th>
-                      <th className="p-4 text-center">Won</th>
-                      <th className="p-4 text-center">Lost</th>
-                      <th className="p-4 text-center">Tied/N/R</th>
-                      <th className="p-4 pr-6 text-center font-black text-blue-650 w-24">Points</th>
+                      <th className="px-2 py-3.5 sm:p-4 sm:pl-6 w-16 text-center">Pos</th>
+                      <th className="px-2 py-3.5 sm:p-4">Team</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">Played</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">Won</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">Lost</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">Tied/N/R</th>
+                      <th className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-650 w-24">Points</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-900 font-semibold">
@@ -162,7 +162,7 @@ export default async function StatsPage() {
                               : ''
                           } ${isTopFour ? 'border-l-4 border-l-blue-500' : ''}`}
                         >
-                          <td className="p-4 pl-6 text-center font-black">
+                          <td className="px-2 py-3.5 sm:p-4 sm:pl-6 text-center font-black">
                             {isFirst ? (
                               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">
                                 🥇
@@ -171,7 +171,7 @@ export default async function StatsPage() {
                               <span className="text-slate-400 font-bold">{index + 1}</span>
                             )}
                           </td>
-                          <td className="p-4 font-bold text-slate-900 flex items-center gap-3">
+                          <td className="px-2 py-3.5 sm:p-4 font-bold text-slate-900 flex items-center gap-3">
                             <div className="w-8.5 h-8.5 rounded-full bg-slate-50 border border-slate-150 flex items-center justify-center font-black text-xs overflow-hidden shadow-inner flex-shrink-0">
                               {row.team.logo_url ? (
                                 <img
@@ -187,15 +187,15 @@ export default async function StatsPage() {
                               {row.team.name}
                             </span>
                           </td>
-                          <td className="p-4 text-center text-slate-500">{row.played}</td>
-                          <td className="p-4 text-center text-emerald-600 font-extrabold">
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.played}</td>
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-emerald-600 font-extrabold">
                             {row.won}
                           </td>
-                          <td className="p-4 text-center text-rose-600 font-extrabold">
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-rose-600 font-extrabold">
                             {row.lost}
                           </td>
-                          <td className="p-4 text-center text-slate-500">{row.drawn}</td>
-                          <td className="p-4 pr-6 text-center font-black text-blue-600 text-base">
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.drawn}</td>
+                          <td className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-600 text-base">
                             {row.points}
                           </td>
                         </tr>

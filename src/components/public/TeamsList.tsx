@@ -500,7 +500,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                           setSelectedPlayer(p)
                           setSelectedPlayerTab('overview')
                         }}
-                        className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-500/50 hover:bg-blue-50/10 transition-all duration-300 flex items-start gap-4 hover:shadow-md cursor-pointer group/item"
+                        className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-blue-500/50 hover:bg-blue-50/10 transition-all duration-300 flex items-start gap-3 sm:gap-4 hover:shadow-md cursor-pointer group/item"
                       >
                         {/* Jersey Circle */}
                         <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-black text-sm flex-shrink-0 shadow-inner group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors duration-300">

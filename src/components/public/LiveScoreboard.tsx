@@ -317,7 +317,7 @@ export default function LiveScoreboard({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
@@ -344,45 +344,45 @@ export default function LiveScoreboard({
                 <div className="space-y-6">
                   {/* Batsmen Grid */}
                   <div>
-                    <div className="grid grid-cols-12 gap-1 text-[9px] text-slate-400 font-bold uppercase tracking-wider pb-2 border-b border-slate-150">
-                      <span className="col-span-5">Batsman</span>
-                      <span className="col-span-3 text-center">R (B)</span>
-                      <span className="col-span-2 text-center">4s / 6s</span>
+                    <div className="grid grid-cols-12 gap-1 text-[9px] text-slate-450 font-bold uppercase tracking-wider pb-2 border-b border-slate-150">
+                      <span className="col-span-5 sm:col-span-6">Batsman</span>
+                      <span className="col-span-3 sm:col-span-2 text-center">R (B)</span>
+                      <span className="col-span-2 text-center">4s/6s</span>
                       <span className="col-span-2 text-right">SR</span>
                     </div>
                     <div className="divide-y divide-slate-100 font-semibold">
                       {/* Striker */}
-                      <div className="grid grid-cols-12 gap-1 py-3 text-slate-800 items-center font-bold">
-                        <span className="col-span-5 flex items-center gap-1 text-slate-900 truncate">
+                      <div className="grid grid-cols-12 gap-1 py-2.5 text-slate-800 items-center font-bold">
+                        <span className="col-span-5 sm:col-span-6 flex items-center gap-1 text-slate-900 truncate">
                           <span className="text-amber-500 flex-shrink-0">⭐</span>
-                          <span className="text-sm font-black">{striker.name}</span>
+                          <span className="text-xs sm:text-sm font-black">{striker.name}</span>
                         </span>
-                        <span className="col-span-3 text-center font-black text-slate-950 text-sm">
+                        <span className="col-span-3 sm:col-span-2 text-center font-black text-slate-950 text-xs">
                           {strikerScore?.runs ?? 0}
-                          <span className="text-slate-400 font-semibold text-[10px] ml-0.5">
+                          <span className="text-slate-400 font-semibold text-[9px] ml-0.5">
                             ({strikerScore?.balls ?? 0})
                           </span>
                         </span>
                         <span className="col-span-2 text-center text-slate-500 text-[10px]">
-                          {strikerScore?.fours ?? 0} / {strikerScore?.sixes ?? 0}
+                          {strikerScore?.fours ?? 0}/{strikerScore?.sixes ?? 0}
                         </span>
-                        <span className="col-span-2 text-right text-slate-500 font-black">
+                        <span className="col-span-2 text-right text-slate-500 font-black text-xs">
                           {strikerScore?.strikeRate ?? '0.00'}
                         </span>
                       </div>
                       {/* Non-Striker */}
-                      <div className="grid grid-cols-12 gap-1 py-3 text-slate-700 items-center">
-                        <span className="col-span-5 pl-5 truncate text-sm">{nonStriker.name}</span>
-                        <span className="col-span-3 text-center font-black text-slate-900 text-sm">
+                      <div className="grid grid-cols-12 gap-1 py-2.5 text-slate-700 items-center">
+                        <span className="col-span-5 sm:col-span-6 pl-5 truncate text-xs">{nonStriker.name}</span>
+                        <span className="col-span-3 sm:col-span-2 text-center font-black text-slate-900 text-xs">
                           {nonStrikerScore?.runs ?? 0}
-                          <span className="text-slate-400 font-semibold text-[10px] ml-0.5">
+                          <span className="text-slate-400 font-semibold text-[9px] ml-0.5">
                             ({nonStrikerScore?.balls ?? 0})
                           </span>
                         </span>
                         <span className="col-span-2 text-center text-slate-500 text-[10px]">
-                          {nonStrikerScore?.fours ?? 0} / {nonStrikerScore?.sixes ?? 0}
+                          {nonStrikerScore?.fours ?? 0}/{nonStrikerScore?.sixes ?? 0}
                         </span>
-                        <span className="col-span-2 text-right text-slate-500 font-bold">
+                        <span className="col-span-2 text-right text-slate-500 font-bold text-xs">
                           {nonStrikerScore?.strikeRate ?? '0.00'}
                         </span>
                       </div>
@@ -392,27 +392,27 @@ export default function LiveScoreboard({
                   {/* Bowler Grid */}
                   {currentBowler && (
                     <div className="border-t border-slate-150 pt-4">
-                      <div className="grid grid-cols-12 gap-1 text-[9px] text-slate-400 font-bold uppercase tracking-wider pb-2">
-                        <span className="col-span-5">Bowler</span>
+                      <div className="grid grid-cols-12 gap-1 text-[9px] text-slate-455 font-bold uppercase tracking-wider pb-2">
+                        <span className="col-span-5 sm:col-span-6">Bowler</span>
                         <span className="col-span-4 text-center">O - M - R - W</span>
-                        <span className="col-span-3 text-right">Econ</span>
+                        <span className="col-span-3 sm:col-span-2 text-right">Econ</span>
                       </div>
-                      <div className="grid grid-cols-12 gap-1 py-2 text-slate-700 font-semibold items-center">
-                        <span className="col-span-5 text-slate-900 font-black text-sm truncate">
+                      <div className="grid grid-cols-12 gap-1 py-2 text-slate-700 font-semibold items-center text-xs">
+                        <span className="col-span-5 sm:col-span-6 text-slate-900 font-black truncate text-xs sm:text-sm">
                           {currentBowler.name}
                         </span>
-                        <span className="col-span-4 text-center font-black text-slate-900 text-sm">
+                        <span className="col-span-4 text-center font-black text-slate-955 text-xs">
                           {bowlerScore?.overs ?? '0.0'}
-                          <span className="text-slate-300 font-normal mx-1">-</span>
+                          <span className="text-slate-300 font-normal mx-0.5 sm:mx-1">-</span>
                           {bowlerScore?.maidens ?? 0}
-                          <span className="text-slate-300 font-normal mx-1">-</span>
+                          <span className="text-slate-300 font-normal mx-0.5 sm:mx-1">-</span>
                           {bowlerScore?.runsConceded ?? 0}
-                          <span className="text-slate-300 font-normal mx-1">-</span>
+                          <span className="text-slate-300 font-normal mx-0.5 sm:mx-1">-</span>
                           <span className="text-rose-600 font-black">
                             {bowlerScore?.wickets ?? 0}
                           </span>
                         </span>
-                        <span className="col-span-3 text-right text-slate-500 font-black">
+                        <span className="col-span-3 sm:col-span-2 text-right text-slate-500 font-black text-xs">
                           {bowlerScore?.economy ?? '0.00'}
                         </span>
                       </div>
@@ -624,32 +624,32 @@ export default function LiveScoreboard({
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="min-w-[650px] sm:w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-white text-slate-400 font-bold border-b border-slate-150 uppercase text-[9px] tracking-wider">
-                          <th className="p-4 pl-6">Batsman</th>
-                          <th className="p-4">Dismissal</th>
-                          <th className="p-4 text-center w-16">Runs</th>
-                          <th className="p-4 text-center w-16">Balls</th>
-                          <th className="p-4 text-center w-12">4s</th>
-                          <th className="p-4 text-center w-12">6s</th>
-                          <th className="p-4 text-center w-16">SR</th>
+                          <th className="px-2 py-3 sm:p-4 sm:pl-6">Batsman</th>
+                          <th className="px-2 py-3 sm:p-4">Dismissal</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-16">Runs</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-16">Balls</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-12">4s</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-12">6s</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-16">SR</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
                         {activeScorecard.batting.map((entry) => (
                           <tr key={entry.playerId} className="hover:bg-slate-50/20">
-                            <td className="p-4 pl-6 font-extrabold text-slate-950">
+                            <td className="px-2 py-3 sm:p-4 sm:pl-6 font-extrabold text-slate-950">
                               {entry.name}
                             </td>
-                            <td className="p-4 text-slate-500 font-medium">{entry.howOut}</td>
-                            <td className="p-4 text-center font-black text-slate-950 text-sm">
+                            <td className="px-2 py-3 sm:p-4 text-slate-505 font-medium">{entry.howOut}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center font-black text-slate-950 text-sm">
                               {entry.runs}
                             </td>
-                            <td className="p-4 text-center text-slate-450">{entry.balls}</td>
-                            <td className="p-4 text-center text-slate-450">{entry.fours}</td>
-                            <td className="p-4 text-center text-slate-450">{entry.sixes}</td>
-                            <td className="p-4 text-center font-black text-blue-600">
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">{entry.balls}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">{entry.fours}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">{entry.sixes}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center font-black text-blue-650">
                               {entry.strikeRate}
                             </td>
                           </tr>
@@ -716,32 +716,32 @@ export default function LiveScoreboard({
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="min-w-[600px] sm:w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-white text-slate-400 font-bold border-b border-slate-150 uppercase text-[9px] tracking-wider">
-                          <th className="p-4 pl-6">Bowler</th>
-                          <th className="p-4 text-center w-20">Overs</th>
-                          <th className="p-4 text-center w-20">Maidens</th>
-                          <th className="p-4 text-center w-20">Runs</th>
-                          <th className="p-4 text-center w-20">Wickets</th>
-                          <th className="p-4 text-center w-20">Economy</th>
+                          <th className="px-2 py-3 sm:p-4 sm:pl-6">Bowler</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-20">Overs</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-20">Maidens</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-20">Runs</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-20">Wickets</th>
+                          <th className="px-2 py-3 sm:p-4 text-center w-20">Economy</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
                         {activeScorecard.bowling.map((entry) => (
                           <tr key={entry.playerId} className="hover:bg-slate-50/20">
-                            <td className="p-4 pl-6 font-extrabold text-slate-950">
+                            <td className="px-2 py-3 sm:p-4 sm:pl-6 font-extrabold text-slate-950">
                               {entry.name}
                             </td>
-                            <td className="p-4 text-center text-slate-450">{entry.overs}</td>
-                            <td className="p-4 text-center text-slate-450">{entry.maidens}</td>
-                            <td className="p-4 text-center text-slate-450">
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">{entry.overs}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">{entry.maidens}</td>
+                            <td className="px-2 py-3 sm:p-4 text-center text-slate-450">
                               {entry.runsConceded}
                             </td>
-                            <td className="p-4 text-center font-black text-rose-600">
+                            <td className="px-2 py-3 sm:p-4 text-center font-black text-rose-600">
                               {entry.wickets}
                             </td>
-                            <td className="p-4 text-center font-black text-emerald-600">
+                            <td className="px-2 py-3 sm:p-4 text-center font-black text-emerald-600">
                               {entry.economy}
                             </td>
                           </tr>

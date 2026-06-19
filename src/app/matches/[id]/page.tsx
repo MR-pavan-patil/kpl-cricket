@@ -57,20 +57,7 @@ export default async function MatchDetailsPage({ params }: PageProps) {
   if (errorMsg || !match || !team1 || !team2) {
     return (
       <div className="min-h-screen bg-white flex flex-col text-gray-900">
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
-                <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 group">
-                  <Trophy className="h-6 w-6 text-emerald-600 group-hover:rotate-12 transition-transform duration-300" />
-                  <span>
-                    KPL <span className="text-emerald-600 font-extrabold">CRICKET</span>
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header />
         <main className="max-w-4xl mx-auto px-4 py-20 flex-1 text-center">
           <ShieldAlert className="h-16 w-16 text-rose-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold">{errorMsg || 'Match details unavailable'}</h2>
@@ -84,32 +71,7 @@ export default async function MatchDetailsPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-gray-900">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 group">
-                <Trophy className="h-6 w-6 text-emerald-600 group-hover:rotate-12 transition-transform duration-300" />
-                <span>
-                  KPL <span className="text-emerald-600 font-extrabold">CRICKET</span>
-                </span>
-              </Link>
-            </div>
-            <nav className="flex items-center gap-6">
-              <Link href="/" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Home</Link>
-              <Link href="/teams" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Teams</Link>
-              <Link href="/schedule" className="text-sm font-semibold text-gray-900 transition-colors">Schedule</Link>
-              <Link href="/stats" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Stats</Link>
-              <Link
-                href="/admin"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold transition-all"
-              >
-                Admin
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         <div>

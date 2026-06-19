@@ -145,33 +145,33 @@ export default async function Home() {
 
       {/* Grid Stats counters card */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full animate-fade-in-up">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all">
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40"><Users className="h-5 w-5" /></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-blue-500/30 transition-all">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40 flex-shrink-0"><Users className="h-5 w-5" /></div>
             <div>
               <p className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Total Teams</p>
-              <h3 className="text-xl font-black text-gray-900 mt-0.5">{teams.length} Teams</h3>
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 mt-0.5">{teams.length} Teams</h3>
             </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all">
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40"><Calendar className="h-5 w-5" /></div>
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-blue-500/30 transition-all">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40 flex-shrink-0"><Calendar className="h-5 w-5" /></div>
             <div>
               <p className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Total Matches</p>
-              <h3 className="text-xl font-black text-gray-900 mt-0.5">{matches.length} Matches</h3>
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 mt-0.5">{matches.length} Matches</h3>
             </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all">
-            <div className="p-3 rounded-xl bg-red-50 text-red-650 border border-red-105/40"><Activity className="h-5 w-5" /></div>
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-blue-500/30 transition-all">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-red-50 text-red-650 border border-red-105/40 flex-shrink-0"><Activity className="h-5 w-5" /></div>
             <div>
               <p className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Live Matches</p>
-              <h3 className="text-xl font-black text-gray-900 mt-0.5">{liveMatches.length} Live</h3>
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 mt-0.5">{liveMatches.length} Live</h3>
             </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all">
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40"><Trophy className="h-5 w-5" /></div>
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-blue-500/30 transition-all">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-105/40 flex-shrink-0"><Trophy className="h-5 w-5" /></div>
             <div>
               <p className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Upcoming</p>
-              <h3 className="text-xl font-black text-gray-900 mt-0.5">{matches.filter((m) => m.status === 'upcoming').length} scheduled</h3>
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 mt-0.5">{matches.filter((m) => m.status === 'upcoming').length} scheduled</h3>
             </div>
           </div>
         </div>
@@ -196,8 +196,8 @@ export default async function Home() {
               No points standings recorded.
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-x-auto shadow-sm">
+              <table className="min-w-[500px] sm:w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold uppercase text-[10px]">
                     <th className="p-3.5 pl-5 w-10 text-center">Pos</th>
