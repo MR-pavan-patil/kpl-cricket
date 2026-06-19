@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/public/Header'
 import { createClient } from '@/utils/supabase/server'
-import { Trophy, Users, Calendar, ArrowRight, Activity, MapPin, Award, User, Shield, AlertTriangle, ArrowUpRight } from 'lucide-react'
+import { Trophy, Users, Calendar, ArrowRight, Activity, MapPin, Award, User, Shield, AlertTriangle, ArrowUpRight, Target } from 'lucide-react'
 import { Team, Player, Match } from '@/types'
 import LiveMatchesRealtime from '@/components/public/LiveMatchesRealtime'
 
@@ -100,7 +100,7 @@ export default async function Home() {
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/25 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> Live Tournament
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight font-display text-white">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight font-display text-white bg-gradient-to-r from-white via-blue-105 to-blue-200 bg-clip-text text-transparent">
             KPL Cricket Tournament 2026
           </h1>
           <p className="max-w-2xl mx-auto text-gray-300 text-sm sm:text-base leading-relaxed font-medium">
@@ -211,7 +211,16 @@ export default async function Home() {
                 <tbody className="divide-y divide-gray-100 text-gray-900 font-semibold">
                   {pointsTablePreview.map((row, idx) => (
                     <tr key={row.team.id} className="hover:bg-gray-50/40 transition-colors">
-                      <td className="p-3.5 pl-5 text-center font-bold text-gray-400">{idx + 1}</td>
+                      <td className="p-3.5 pl-5 text-center font-bold">
+                        <span className={`inline-flex items-center justify-center w-5.5 h-5.5 rounded-full text-[10px] font-bold ${
+                          idx === 0 ? 'bg-amber-100 text-amber-800' :
+                          idx === 1 ? 'bg-slate-100 text-slate-700' :
+                          idx === 2 ? 'bg-amber-50 text-amber-900/60' :
+                          'text-gray-400'
+                        }`}>
+                          {idx + 1}
+                        </span>
+                      </td>
                       <td className="p-3.5 font-bold text-gray-900 flex items-center gap-2.5">
                         <div className="w-6.5 h-6.5 rounded bg-gray-50 border border-gray-150 flex items-center justify-center font-bold text-[9px] overflow-hidden flex-shrink-0">
                           {row.team.logo_url ? <img src={row.team.logo_url} alt="" className="w-full h-full object-cover" /> : row.team.name.slice(0, 2).toUpperCase()}
@@ -238,8 +247,10 @@ export default async function Home() {
 
           <div className="space-y-4">
             {/* Top Batsman */}
-            <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-              <span className="text-[10px] text-blue-600 font-extrabold uppercase tracking-wider">Orange Cap Leader</span>
+            <div className="bg-gradient-to-br from-white to-amber-55/20 p-5 rounded-2xl border border-amber-250/40 hover:border-amber-500/30 transition-all hover:scale-[1.01] duration-300 shadow-sm relative overflow-hidden group">
+              <span className="text-[10px] text-amber-705 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                <Trophy className="h-3.5 w-3.5 text-amber-600 fill-amber-100" /> Orange Cap Leader
+              </span>
               {topBatsman ? (
                 <div className="mt-2.5 space-y-1">
                   <h4 className="text-base font-black text-gray-900">{topBatsman.name}</h4>
@@ -247,7 +258,7 @@ export default async function Home() {
                     {teams.find((t) => t.id === topBatsman.team_id)?.name}
                   </p>
                   <div className="flex gap-4 text-xs font-bold text-gray-700 pt-3 border-t border-gray-100 mt-3">
-                    <div>Runs: <span className="text-blue-600 font-black">{topBatsman.runs}</span></div>
+                    <div>Runs: <span className="text-amber-705 font-black">{topBatsman.runs}</span></div>
                     <div>4s: <span className="text-gray-500">{topBatsman.fours}</span></div>
                     <div>6s: <span className="text-gray-500">{topBatsman.sixes}</span></div>
                   </div>
@@ -258,8 +269,10 @@ export default async function Home() {
             </div>
 
             {/* Top Bowler */}
-            <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-              <span className="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider">Purple Cap Leader</span>
+            <div className="bg-gradient-to-br from-white to-indigo-55/20 p-5 rounded-2xl border border-indigo-250/40 hover:border-indigo-500/30 transition-all hover:scale-[1.01] duration-300 shadow-sm relative overflow-hidden group">
+              <span className="text-[10px] text-indigo-650 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5 text-indigo-600" /> Purple Cap Leader
+              </span>
               {topBowler ? (
                 <div className="mt-2.5 space-y-1">
                   <h4 className="text-base font-black text-gray-900">{topBowler.name}</h4>
@@ -267,7 +280,7 @@ export default async function Home() {
                     {teams.find((t) => t.id === topBowler.team_id)?.name}
                   </p>
                   <div className="flex gap-4 text-xs font-bold text-gray-700 pt-3 border-t border-gray-100 mt-3">
-                    <div>Wickets: <span className="text-amber-600 font-black">{topBowler.wickets}</span></div>
+                    <div>Wickets: <span className="text-indigo-650 font-black">{topBowler.wickets}</span></div>
                     <div>Matches: <span className="text-gray-500">{topBowler.matches_played}</span></div>
                   </div>
                 </div>

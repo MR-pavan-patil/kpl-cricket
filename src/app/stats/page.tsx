@@ -217,10 +217,10 @@ export default async function StatsPage() {
             </h2>
 
             {/* Most Runs Card */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-150 shadow-md space-y-4">
-              <h3 className="font-extrabold text-slate-900 border-b border-slate-100 pb-2.5 text-xs uppercase tracking-wider flex items-center justify-between">
+            <div className="bg-gradient-to-br from-white to-amber-55/20 p-6 rounded-3xl border border-amber-250/30 shadow-md space-y-4">
+              <h3 className="font-extrabold text-slate-900 border-b border-slate-105 pb-2.5 text-xs uppercase tracking-wider flex items-center justify-between">
                 <span>Most Runs</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-black uppercase tracking-wider">
+                <span className="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-250 text-amber-800 text-[9px] font-black uppercase tracking-wider">
                   Orange Cap
                 </span>
               </h3>
@@ -296,10 +296,10 @@ export default async function StatsPage() {
             </h2>
 
             {/* Most Wickets Card */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-150 shadow-md space-y-4">
-              <h3 className="font-extrabold text-slate-900 border-b border-slate-100 pb-2.5 text-xs uppercase tracking-wider flex items-center justify-between">
+            <div className="bg-gradient-to-br from-white to-indigo-55/20 p-6 rounded-3xl border border-indigo-250/30 shadow-md space-y-4">
+              <h3 className="font-extrabold text-slate-900 border-b border-slate-105 pb-2.5 text-xs uppercase tracking-wider flex items-center justify-between">
                 <span>Most Wickets</span>
-                <span className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[9px] font-black uppercase tracking-wider">
+                <span className="px-2.5 py-1 rounded-full bg-indigo-100 border border-indigo-250 text-indigo-800 text-[9px] font-black uppercase tracking-wider">
                   Purple Cap
                 </span>
               </h3>

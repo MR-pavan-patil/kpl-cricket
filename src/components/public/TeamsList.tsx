@@ -433,27 +433,25 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
         const teamGradient = getTeamColor(selectedTeam.name)
 
         return (
-          <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
-              onClick={() => setSelectedTeam(null)} 
-            />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-md animate-fade-in transition-all">
+            {/* Click-away overlay */}
+            <div className="absolute inset-0 cursor-pointer" onClick={() => setSelectedTeam(null)} />
 
             {/* Modal Body */}
-            <div className="relative bg-white rounded-3xl border border-slate-200 w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col z-10">
+            <div className="relative bg-white rounded-3xl border border-slate-200 w-full max-w-4xl shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] flex flex-col z-10 scale-100 animate-zoom-in">
               
               {/* Header block with team gradient */}
               <div className={`bg-gradient-to-r ${teamGradient} p-6 sm:p-8 text-white relative`}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
                 <button
                   onClick={() => setSelectedTeam(null)}
-                  className="absolute top-6 right-6 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                  className="absolute top-6 right-6 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-30"
+                  aria-label="Close squad view"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="flex items-center gap-5 relative z-10">
+                <div className="flex items-center gap-5 relative z-10 pr-12 sm:pr-0">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-white/20 flex items-center justify-center font-black text-xl text-slate-800 overflow-hidden shadow-lg flex-shrink-0">
                     {selectedTeam.logo_url ? (
                       <img
@@ -481,10 +479,10 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
               </div>
 
               {/* Roster Area */}
-              <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-slate-55">
+              <div className="p-4 sm:p-8 overflow-y-auto flex-1 bg-slate-55">
                 <div className="flex items-center gap-2 mb-6 border-b border-slate-150 pb-3">
                   <Shield className="h-5 w-5 text-blue-650" />
-                  <h4 className="text-sm font-black text-slate-700 uppercase tracking-wider">Squad Player Profiles (Click player card to view profile)</h4>
+                  <h4 className="text-xs sm:text-sm font-black text-slate-700 uppercase tracking-wider">Squad Player Profiles (Click player card to view profile)</h4>
                 </div>
 
                 {teamPlayers.length === 0 ? (
@@ -503,7 +501,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-blue-500/50 hover:bg-blue-50/10 transition-all duration-300 flex items-start gap-3 sm:gap-4 hover:shadow-md cursor-pointer group/item"
                       >
                         {/* Jersey Circle */}
-                        <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-black text-sm flex-shrink-0 shadow-inner group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors duration-300">
+                        <div className="w-12 h-12 rounded-xl bg-blue-55 border border-blue-105 text-blue-600 flex items-center justify-center font-black text-sm flex-shrink-0 shadow-inner group-hover/item:bg-blue-600 group-hover/item:text-white transition-colors duration-300">
                           #{p.jersey_number}
                         </div>
 
@@ -521,15 +519,15 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                           {/* Stat items */}
                           <div className="grid grid-cols-3 gap-2 text-center text-[10px] bg-slate-50 p-2.5 rounded-xl border border-slate-150">
                             <div>
-                              <p className="text-slate-500 font-bold uppercase tracking-wider">Runs</p>
+                              <p className="text-slate-550 font-bold uppercase tracking-wider text-[9px]">Runs</p>
                               <p className="font-extrabold text-slate-950 mt-0.5">{p.runs}</p>
                             </div>
-                            <div className="border-l border-r border-slate-250">
-                              <p className="text-slate-500 font-bold uppercase tracking-wider">Wkts</p>
+                            <div className="border-l border-r border-slate-200">
+                              <p className="text-slate-550 font-bold uppercase tracking-wider text-[9px]">Wkts</p>
                               <p className="font-extrabold text-slate-950 mt-0.5">{p.wickets}</p>
                             </div>
                             <div>
-                              <p className="text-slate-500 font-bold uppercase tracking-wider">Matches</p>
+                              <p className="text-slate-550 font-bold uppercase tracking-wider text-[9px]">Matches</p>
                               <p className="font-extrabold text-slate-950 mt-0.5">{p.matches_played}</p>
                             </div>
                           </div>
@@ -550,7 +548,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
               <div className="p-4 bg-white border-t border-slate-150 flex justify-end">
                 <button
                   onClick={() => setSelectedTeam(null)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-650 hover:text-slate-950 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
                 >
                   Close Squad View
                 </button>
@@ -576,27 +574,25 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
         const mvpCount = mvpsMap[selectedPlayer.id] || 0
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-slate-900/70 backdrop-blur-md transition-opacity" 
-              onClick={() => setSelectedPlayer(null)} 
-            />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-md animate-fade-in transition-all">
+            {/* Click-away overlay */}
+            <div className="absolute inset-0 cursor-pointer" onClick={() => setSelectedPlayer(null)} />
 
             {/* Modal Body */}
-            <div className="relative bg-white rounded-3xl border border-slate-250 w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] flex flex-col z-10">
+            <div className="relative bg-white rounded-3xl border border-slate-250 w-full max-w-2xl shadow-2xl overflow-hidden max-h-[92vh] sm:max-h-[90vh] md:max-h-[85vh] flex flex-col z-10 scale-100 animate-zoom-in">
               
               {/* Header profile with team color gradient */}
               <div className={`bg-gradient-to-r ${teamGradient} p-6 sm:p-8 text-white relative`}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
                 <button
                   onClick={() => setSelectedPlayer(null)}
-                  className="absolute top-6 right-6 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                  className="absolute top-6 right-6 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-30"
+                  aria-label="Close player profile"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10 text-center sm:text-left pr-12 sm:pr-0">
                   {/* Large visual jersey avatar */}
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white text-slate-800 flex flex-col items-center justify-center shadow-xl flex-shrink-0 border-4 border-white/25">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Jersey</p>
@@ -621,7 +617,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
               </div>
 
               {/* Navigation Tabs */}
-              <div className="bg-white border-b border-slate-150 flex px-6 overflow-x-auto">
+              <div className="bg-white border-b border-slate-150 flex px-4 sm:px-6 overflow-x-auto">
                 {[
                   { id: 'overview', name: 'Overview', icon: User },
                   { id: 'batting', name: 'Batting Stats', icon: TrendingUp },
@@ -634,10 +630,10 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                     <button
                       key={t.id}
                       onClick={() => setSelectedPlayerTab(t.id)}
-                      className={`flex items-center gap-2 py-4 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+                      className={`flex items-center gap-2 py-4 px-3 sm:px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                         active
-                          ? 'border-blue-600 text-blue-600'
-                          : 'border-transparent text-slate-500 hover:text-slate-900'
+                           ? 'border-blue-600 text-blue-600'
+                           : 'border-transparent text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -648,7 +644,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
               </div>
 
               {/* Tab Contents */}
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-55">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-55">
                 
                 {/* 1. OVERVIEW TAB */}
                 {selectedPlayerTab === 'overview' && (
@@ -657,33 +653,33 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                     {/* Performance Cards Row */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {topScorer && (
-                        <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl text-center shadow-xs">
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-100/50 border border-orange-200/50 p-4 rounded-2xl text-center shadow-xs">
                           <Trophy className="h-6 w-6 text-orange-600 mx-auto mb-1.5" />
                           <p className="text-[9px] text-orange-700 font-bold uppercase tracking-wider">Top Run Scorer</p>
-                          <p className="text-xs text-orange-900 font-extrabold mt-1">Runs Leader</p>
+                          <p className="text-xs text-orange-950 font-extrabold mt-1">Runs Leader</p>
                         </div>
                       )}
                       {topWicketer && (
-                        <div className="bg-purple-50 border border-purple-200 p-4 rounded-2xl text-center shadow-xs">
+                        <div className="bg-gradient-to-br from-purple-50 to-indigo-100/50 border border-purple-200/50 p-4 rounded-2xl text-center shadow-xs">
                           <Target className="h-6 w-6 text-purple-600 mx-auto mb-1.5" />
                           <p className="text-[9px] text-purple-700 font-bold uppercase tracking-wider">Top Bowler</p>
-                          <p className="text-xs text-purple-900 font-extrabold mt-1">Wickets Leader</p>
+                          <p className="text-xs text-purple-950 font-extrabold mt-1">Wickets Leader</p>
                         </div>
                       )}
-                      <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl text-center shadow-xs">
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/50 p-4 rounded-2xl text-center shadow-xs">
                         <Activity className="h-6 w-6 text-blue-600 mx-auto mb-1.5" />
-                        <p className="text-[9px] text-blue-700 font-bold uppercase tracking-wider">MVP Count</p>
+                        <p className="text-[9px] text-blue-750 font-bold uppercase tracking-wider">MVP Count</p>
                         <p className="text-base font-black text-blue-900 mt-1">{mvpCount} MVPs</p>
                       </div>
-                      <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center shadow-xs">
+                      <div className="bg-gradient-to-br from-amber-50 to-yellow-100/50 border border-yellow-250/50 p-4 rounded-2xl text-center shadow-xs">
                         <Star className="h-6 w-6 text-amber-600 mx-auto mb-1.5 fill-amber-100" />
-                        <p className="text-[9px] text-amber-700 font-bold uppercase tracking-wider">Top Score</p>
+                        <p className="text-[9px] text-amber-705 font-bold uppercase tracking-wider">Top Score</p>
                         <p className="text-base font-black text-amber-900 mt-1">{stats.highestScore}</p>
                       </div>
                       {(!topScorer && !topWicketer) && (
-                        <div className="bg-slate-100 border border-slate-200 p-4 rounded-2xl text-center shadow-xs col-span-2">
-                          <User className="h-6 w-6 text-slate-500 mx-auto mb-1.5" />
-                          <p className="text-[9px] text-slate-600 font-bold uppercase tracking-wider">Team Roster</p>
+                        <div className="bg-gradient-to-br from-slate-50 to-slate-100/60 border border-slate-200 p-4 rounded-2xl text-center shadow-xs col-span-2">
+                          <User className="h-6 w-6 text-slate-550 mx-auto mb-1.5" />
+                          <p className="text-[9px] text-slate-650 font-bold uppercase tracking-wider">Team Roster</p>
                           <p className="text-xs text-slate-900 font-bold mt-1">Active Squad Member</p>
                         </div>
                       )}
@@ -721,24 +717,24 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-105 pb-2">
                           Career Batting
                         </h4>
-                        <div className="space-y-3.5 text-xs">
-                          <div className="flex justify-between font-semibold">
+                        <div className="space-y-3.5 text-xs font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Matches Played</span>
                             <span className="text-slate-900">{selectedPlayer.matches_played}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Total Runs</span>
                             <span className="text-blue-600 font-black">{selectedPlayer.runs}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Highest Score</span>
                             <span className="text-slate-900 font-black">{stats.highestScore}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Fours (4s)</span>
                             <span className="text-slate-900">{selectedPlayer.fours}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Sixes (6s)</span>
                             <span className="text-slate-900">{selectedPlayer.sixes}</span>
                           </div>
@@ -750,24 +746,24 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-105 pb-2">
                           Tournament Batting
                         </h4>
-                        <div className="space-y-3.5 text-xs">
-                          <div className="flex justify-between font-semibold">
+                        <div className="space-y-3.5 text-xs font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Innings Played</span>
                             <span className="text-slate-900">{stats.matchHistory.length}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Tournament Runs</span>
                             <span className="text-blue-600 font-black">{stats.tournamentRuns}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Balls Faced</span>
                             <span className="text-slate-900">{stats.tournamentBalls}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Strike Rate</span>
                             <span className="text-slate-900 font-black">{stats.tournamentSR}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Tournament Boundaries</span>
                             <span className="text-slate-900">{stats.tournamentFours}x4, {stats.tournamentSixes}x6</span>
                           </div>
@@ -786,20 +782,20 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-105 pb-2">
                           Career Bowling
                         </h4>
-                        <div className="space-y-3.5 text-xs">
-                          <div className="flex justify-between font-semibold">
+                        <div className="space-y-3.5 text-xs font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Matches Played</span>
                             <span className="text-slate-900">{selectedPlayer.matches_played}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Total Wickets</span>
                             <span className="text-emerald-600 font-black">{selectedPlayer.wickets}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Best Bowling</span>
                             <span className="text-slate-900 font-black">{stats.bestBowling}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Economy</span>
                             <span className="text-slate-900">{stats.tournamentEcon}</span>
                           </div>
@@ -811,20 +807,20 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-105 pb-2">
                           Tournament Bowling
                         </h4>
-                        <div className="space-y-3.5 text-xs">
-                          <div className="flex justify-between font-semibold">
+                        <div className="space-y-3.5 text-xs font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Overs Bowled</span>
                             <span className="text-slate-900">{Math.floor(stats.tournamentBallsBowled / 6)}.{stats.tournamentBallsBowled % 6}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Wickets Taken</span>
                             <span className="text-emerald-600 font-black">{stats.tournamentWickets}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Runs Conceded</span>
                             <span className="text-slate-905">{stats.tournamentRunsConceded}</span>
                           </div>
-                          <div className="flex justify-between font-semibold">
+                          <div className="flex justify-between">
                             <span className="text-slate-500">Tournament Economy</span>
                             <span className="text-slate-900 font-black">{stats.tournamentEcon}</span>
                           </div>
@@ -842,36 +838,73 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
                         No match logs recorded for this player in this tournament.
                       </div>
                     ) : (
-                      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <table className="w-full text-left border-collapse text-xs">
-                          <thead>
-                            <tr className="bg-slate-50 border-b border-slate-150 text-slate-550 font-bold uppercase text-[9px] tracking-wider">
-                              <th className="p-3.5">Opponent</th>
-                              <th className="p-3.5 text-center">Batting</th>
-                              <th className="p-3.5 text-center">Bowling</th>
-                              <th className="p-3.5">Result</th>
-                              <th className="p-3.5 text-right">Date</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
-                            {stats.matchHistory.map((item, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="p-3.5 font-bold text-slate-900">{item.opponent}</td>
-                                <td className="p-3.5 text-center">
-                                  {item.runs} <span className="text-[10px] text-slate-400 font-normal">({item.balls}){item.isOut ? '' : '*'}</span>
-                                </td>
-                                <td className="p-3.5 text-center">
-                                  {item.wickets}/{item.runsConceded} <span className="text-[10px] text-slate-400 font-normal">({Math.floor(item.ballsBowled / 6)}.{item.ballsBowled % 6})</span>
-                                </td>
-                                <td className="p-3.5 text-slate-600 truncate max-w-[130px]" title={item.result}>
-                                  {item.result}
-                                </td>
-                                <td className="p-3.5 text-right text-slate-500">{item.date}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <>
+                        {/* Table layout on desktop/tablet */}
+                        <div className="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="bg-slate-50 border-b border-slate-150 text-slate-550 font-bold uppercase text-[9px] tracking-wider">
+                                  <th className="p-3.5 pl-5">Opponent</th>
+                                  <th className="p-3.5 text-center">Batting</th>
+                                  <th className="p-3.5 text-center">Bowling</th>
+                                  <th className="p-3.5">Result</th>
+                                  <th className="p-3.5 pr-5 text-right">Date</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+                                {stats.matchHistory.map((item, idx) => (
+                                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-3.5 pl-5 font-bold text-slate-900">{item.opponent}</td>
+                                    <td className="p-3.5 text-center">
+                                      {item.runs} <span className="text-[10px] text-slate-450 font-normal">({item.balls}){item.isOut ? '' : '*'}</span>
+                                    </td>
+                                    <td className="p-3.5 text-center">
+                                      {item.wickets}/{item.runsConceded} <span className="text-[10px] text-slate-450 font-normal">({Math.floor(item.ballsBowled / 6)}.{item.ballsBowled % 6})</span>
+                                    </td>
+                                    <td className="p-3.5 text-slate-600 truncate max-w-[150px]" title={item.result}>
+                                      {item.result}
+                                    </td>
+                                    <td className="p-3.5 pr-5 text-right text-slate-500">{item.date}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* Card layout on mobile */}
+                        <div className="block sm:hidden space-y-3">
+                          {stats.matchHistory.map((item, idx) => (
+                            <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-150 shadow-xs space-y-2.5">
+                              <div className="flex justify-between items-center">
+                                <span className="font-extrabold text-slate-900 text-xs truncate max-w-[170px]">{item.opponent}</span>
+                                <span className="text-[9px] text-slate-400 font-bold">{item.date}</span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2 text-center text-[10px] bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                                <div>
+                                  <p className="text-slate-450 font-bold uppercase tracking-wider text-[9px]">Batting</p>
+                                  <p className="font-extrabold text-slate-950 mt-0.5">
+                                    {item.runs} <span className="font-normal text-slate-500">({item.balls}){item.isOut ? '' : '*'}</span>
+                                  </p>
+                                </div>
+                                <div className="border-l border-slate-200">
+                                  <p className="text-slate-450 font-bold uppercase tracking-wider text-[9px]">Bowling</p>
+                                  <p className="font-extrabold text-slate-950 mt-0.5">
+                                    {item.wickets}/{item.runsConceded} <span className="font-normal text-slate-500">({Math.floor(item.ballsBowled / 6)}.{item.ballsBowled % 6})</span>
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="text-[10px] text-slate-600 font-bold pl-1 bg-blue-50/20 p-2 rounded-lg border border-blue-105/20">
+                                <span className="text-blue-600 uppercase text-[9px] tracking-wider font-extrabold block mb-0.5">Match Result</span>
+                                <p className="truncate text-slate-700">{item.result}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -882,7 +915,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
               <div className="p-4 bg-white border-t border-slate-150 flex justify-end">
                 <button
                   onClick={() => setSelectedPlayer(null)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-650 hover:text-slate-950 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
                 >
                   Back to Squad
                 </button>

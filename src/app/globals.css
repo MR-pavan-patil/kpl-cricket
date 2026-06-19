@@ -5,6 +5,90 @@
   --color-brand-green: #16a34a;
   --color-brand-red: #dc2626;
   --color-brand-light: #f8fafc;
+
+  /* Custom intermediate Slate Shades */
+  --color-slate-55: #f8fafc;
+  --color-slate-105: #f1f5f9;
+  --color-slate-150: #e2e8f0;
+  --color-slate-205: #cbd5e1;
+  --color-slate-250: #cbd5e1;
+  --color-slate-350: #94a3b8;
+  --color-slate-450: #64748b;
+  --color-slate-455: #64748b;
+  --color-slate-505: #475569;
+  --color-slate-550: #475569;
+  --color-slate-650: #334155;
+  --color-slate-655: #334155;
+  --color-slate-850: #1e293b;
+  --color-slate-905: #0f172a;
+  --color-slate-955: #020617;
+
+  /* Custom intermediate Blue Shades */
+  --color-blue-55: #eff6ff;
+  --color-blue-105: #dbeafe;
+  --color-blue-150: #bfdbfe;
+  --color-blue-250: #93c5fd;
+  --color-blue-350: #60a5fa;
+  --color-blue-550: #3b82f6;
+  --color-blue-650: #1d4ed8;
+  --color-blue-750: #1e40af;
+  --color-blue-855: #1e3a8a;
+  --color-blue-905: #172554;
+
+  /* Custom intermediate Emerald Shades */
+  --color-emerald-55: #ecfdf5;
+  --color-emerald-105: #d1fae5;
+  --color-emerald-150: #a7f3d0;
+  --color-emerald-250: #6ee7b7;
+  --color-emerald-650: #047857;
+  --color-emerald-850: #064e3b;
+
+  /* Custom intermediate Rose Shades */
+  --color-rose-55: #fff1f2;
+  --color-rose-105: #ffe4e6;
+  --color-rose-150: #fecdd3;
+  --color-rose-250: #fda4af;
+  --color-rose-350: #fb7185;
+
+  /* Custom intermediate Red Shades */
+  --color-red-55: #fef2f2;
+  --color-red-105: #fee2e2;
+  --color-red-150: #fca5a5;
+  --color-red-250: #f87171;
+  --color-red-650: #b91c1c;
+
+  /* Custom intermediate Amber Shades */
+  --color-amber-55: #fffbeb;
+  --color-amber-105: #fef3c7;
+  --color-amber-150: #fde68a;
+  --color-amber-250: #fcd34d;
+  --color-amber-705: #b45309;
+
+  /* Custom intermediate Indigo Shades */
+  --color-indigo-55: #e0e7ff;
+  --color-indigo-105: #c7d2fe;
+  --color-indigo-650: #4338ca;
+
+  /* Custom intermediate Gray Shades */
+  --color-gray-55: #f9fafb;
+  --color-gray-105: #f3f4f6;
+  --color-gray-150: #e5e7eb;
+  --color-gray-250: #d1d5db;
+  --color-gray-850: #1f2937;
+
+  /* Custom Animations & Keyframes */
+  --animate-fade-in: fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-zoom-in: zoom-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes zoom-in {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
 }
 
 :root {
