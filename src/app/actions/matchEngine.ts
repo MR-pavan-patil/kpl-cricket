@@ -158,7 +158,53 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
     .map((mp: any) => mp.player)
     .filter(Boolean)
 
-  // 3. Append ball
+  // 3. Validation checks BEFORE recording ball
+  if (match.status === 'completed') {
+    return { error: 'Match is already completed. Innings cannot continue.' }
+  }
+
+  if (ball.runs < 0 || ball.extra_runs < 0) {
+    return { error: 'Runs cannot be negative.' }
+  }
+
+  // Calculate scores for existing balls (before appending the new ball)
+  const validationInnings1 = calculateScorecard(match.balls_log || [], players, 1)
+  const validationInnings2 = calculateScorecard(match.balls_log || [], players, 2)
+  const currentInningsScoreCheck = match.innings_number === 1 ? validationInnings1 : validationInnings2
+  
+  // A. Check if overs limit already reached
+  if (currentInningsScoreCheck.totalBalls >= match.overs_limit * 6) {
+    return { error: 'Overs limit reached for this innings. Innings cannot continue.' }
+  }
+
+  // B. Check if wickets limit reached (all out)
+  const team1SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team1_id).length || match.players_count
+  const team2SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team2_id).length || match.players_count
+  
+  const teamBattingFirstId = match.toss_decision === 'bat'
+    ? match.toss_winner_id
+    : (match.team1_id === match.toss_winner_id ? match.team2_id : match.team1_id)
+  const teamBattingSecondId = teamBattingFirstId === match.team1_id ? match.team2_id : match.team1_id
+
+  const battingFirstTeamPlayersCount = teamBattingFirstId === match.team1_id ? team1SquadCount : team2SquadCount
+  const battingSecondTeamPlayersCount = teamBattingSecondId === match.team1_id ? team1SquadCount : team2SquadCount
+  
+  const currentBattingSquadCount = match.innings_number === 1 ? battingFirstTeamPlayersCount : battingSecondTeamPlayersCount
+
+  if (currentInningsScoreCheck.totalWickets >= currentBattingSquadCount - 1) {
+    return { error: 'Batting team is already all out. Innings cannot continue.' }
+  }
+
+  // C. In innings 2, check if target has already been achieved
+  if (match.innings_number === 2) {
+    const target = validationInnings1.totalRuns + 1
+    const currentBattingRuns = match.current_batting_team_id === match.team1_id ? match.team1_runs : match.team2_runs
+    if (currentBattingRuns >= target) {
+      return { error: 'Target already achieved. Innings cannot continue.' }
+    }
+  }
+
+  // 4. Append ball
   const updatedLog = [...(match.balls_log || []), ball]
 
   // Calculate scores for both innings using scorecard calculator
@@ -166,9 +212,6 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
   const innings2Score = calculateScorecard(updatedLog, players, 2)
 
   // Determine who bats first to map innings to team columns correctly
-  const teamBattingFirstId = match.toss_decision === 'bat'
-    ? match.toss_winner_id
-    : (match.team1_id === match.toss_winner_id ? match.team2_id : match.team1_id)
 
   let team1_runs = 0
   let team1_wickets = 0
@@ -241,6 +284,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
   let matchStatus = match.status
   let winnerId = match.winner_id
   let resultDesc = match.result_desc
+  let resultType = match.result_type
 
   // Helper to get team names
   const { data: t1Data } = await supabase.from('teams').select('name').eq('id', match.team1_id).single()
@@ -248,16 +292,10 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
   const team1Name = t1Data?.name || 'Team A'
   const team2Name = t2Data?.name || 'Team B'
 
-  const teamBattingSecondId = teamBattingFirstId === match.team1_id ? match.team2_id : match.team1_id
   const teamBattingSecondName = teamBattingSecondId === match.team1_id ? team1Name : team2Name
   const teamBattingFirstName = teamBattingFirstId === match.team1_id ? team1Name : team2Name
 
   const isBattingFirstInnings = currentBattingTeamId === teamBattingFirstId
-
-  const team1SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team1_id).length || match.players_count
-  const team2SquadCount = (mPlayersData || []).filter((mp) => mp.team_id === match.team2_id).length || match.players_count
-  const battingFirstTeamPlayersCount = teamBattingFirstId === match.team1_id ? team1SquadCount : team2SquadCount
-  const battingSecondTeamPlayersCount = teamBattingSecondId === match.team1_id ? team1SquadCount : team2SquadCount
 
   if (inningsNumber === 1) {
     const isFirstInningsOver =
@@ -282,6 +320,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
       winnerId = teamBattingSecondId
       const wicketsLeft = battingSecondTeamPlayersCount - currentBattingWickets
       resultDesc = `${teamBattingSecondName} won by ${wicketsLeft} wickets`
+      resultType = 'win'
       currentBattingTeamId = null
       nextStrikerId = null as any
       nextNonStrikerId = null as any
@@ -302,10 +341,12 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
         if (currentBattingRuns === target - 1) {
           winnerId = null
           resultDesc = 'Match Tied'
+          resultType = 'tie'
         } else {
           winnerId = teamBattingFirstId
           const runsMargin = target - 1 - currentBattingRuns
           resultDesc = `${teamBattingFirstName} won by ${runsMargin} runs`
+          resultType = 'win'
         }
       }
     }
@@ -330,6 +371,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
       status: matchStatus,
       winner_id: winnerId,
       result_desc: resultDesc,
+      result_type: resultType,
     })
     .eq('id', matchId)
 
@@ -339,6 +381,7 @@ export async function recordMatchEngineBall(matchId: string, ball: BallLogEvent)
 
   // 6. Recalculate all player stats if match is completed
   if (matchStatus === 'completed') {
+    await propagateKnockoutWinner(supabase, match.stage, winnerId)
     await recalculateAllPlayerStats()
   }
 
@@ -505,6 +548,8 @@ export async function undoMatchEngineBall(matchId: string) {
       status: matchStatus,
       winner_id: winnerId,
       result_desc: resultDesc,
+      result_type: null,
+      match_abandon_reason: null,
     })
     .eq('id', matchId)
 
@@ -639,5 +684,148 @@ export async function saveMatchSettings(matchId: string, oversLimit: number, pla
   }
 
   revalidatePath(`/admin/matches/${matchId}/setup`)
+  return { success: true }
+}
+
+export async function propagateKnockoutWinner(supabase: any, stage: string, winnerId: string | null) {
+  if (!winnerId) return
+  if (stage === 'semi_final_1' || stage === 'semi_final_2') {
+    // Find final match
+    const { data: finalMatches } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('stage', 'final')
+    
+    if (finalMatches && finalMatches.length > 0) {
+      const finalMatch = finalMatches[0]
+      const updateData = stage === 'semi_final_1' ? { team1_id: winnerId } : { team2_id: winnerId }
+      await supabase
+        .from('matches')
+        .update(updateData)
+        .eq('id', finalMatch.id)
+    }
+  }
+}
+
+export async function resetMatchBallsLog(matchId: string) {
+  const supabase = await createClient()
+
+  // Fetch the match to know its stage
+  const { data: match, error: fetchError } = await supabase
+    .from('matches')
+    .select('*')
+    .eq('id', matchId)
+    .single()
+
+  if (fetchError || !match) {
+    return { error: fetchError?.message || 'Match not found.' }
+  }
+
+  const { error } = await supabase
+    .from('matches')
+    .update({
+      balls_log: [],
+      team1_runs: 0,
+      team1_wickets: 0,
+      team1_balls: 0,
+      team2_runs: 0,
+      team2_wickets: 0,
+      team2_balls: 0,
+      current_striker_id: null,
+      current_non_striker_id: null,
+      current_bowler_id: null,
+      innings_number: 1,
+      current_batting_team_id: null,
+      status: 'upcoming',
+      winner_id: null,
+      result_desc: null,
+      result_type: null,
+      match_abandon_reason: null,
+      toss_winner_id: null,
+      toss_decision: null,
+    })
+    .eq('id', matchId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // If it was a semi-final, clear the slot in the final match
+  if (match.stage === 'semi_final_1' || match.stage === 'semi_final_2') {
+    const { data: finalMatches } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('stage', 'final')
+
+    if (finalMatches && finalMatches.length > 0) {
+      const finalMatch = finalMatches[0]
+      const updateData = match.stage === 'semi_final_1' ? { team1_id: null } : { team2_id: null }
+      await supabase
+        .from('matches')
+        .update(updateData)
+        .eq('id', finalMatch.id)
+    }
+  }
+
+  // Recalculate player stats
+  await recalculateAllPlayerStats()
+
+  revalidatePath(`/admin/scoring/${matchId}`)
+  revalidatePath(`/admin/matches`)
+  revalidatePath(`/matches/${matchId}`)
+  revalidatePath('/schedule')
+  revalidatePath('/stats')
+  revalidatePath('/bracket')
+  revalidatePath('/')
+  return { success: true }
+}
+
+export async function abandonMatch(matchId: string, reason: string) {
+  const supabase = await createClient()
+
+  // Fetch the match to know its stage
+  const { data: match, error: fetchError } = await supabase
+    .from('matches')
+    .select('*')
+    .eq('id', matchId)
+    .single()
+
+  if (fetchError || !match) {
+    return { error: fetchError?.message || 'Match not found.' }
+  }
+
+  const isKnockout = match.stage === 'semi_final_1' || match.stage === 'semi_final_2' || match.stage === 'final'
+  if (isKnockout) {
+    return { error: 'Knockout matches (Semi-Finals & Finals) cannot be abandoned as No Result.' }
+  }
+
+  const { error } = await supabase
+    .from('matches')
+    .update({
+      status: 'completed',
+      result_type: 'no_result',
+      match_abandon_reason: reason,
+      result_desc: `No Result (${reason})`,
+      current_striker_id: null,
+      current_non_striker_id: null,
+      current_bowler_id: null,
+      current_batting_team_id: null,
+    })
+    .eq('id', matchId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // Recalculate player stats (to be sure, though it shouldn't affect them)
+  await recalculateAllPlayerStats()
+
+  revalidatePath(`/admin/scoring/${matchId}`)
+  revalidatePath(`/admin/matches`)
+  revalidatePath(`/matches/${matchId}`)
+  revalidatePath('/schedule')
+  revalidatePath('/stats')
+  revalidatePath('/bracket')
+  revalidatePath('/')
   return { success: true }
 }

@@ -41,22 +41,26 @@ export default async function StatsPage() {
   }
 
   // Calculate Points Table Standing
+  const completedLeagueMatches = completedMatches.filter((m) => m.stage === 'league' || !m.stage)
+
   const pointsTable = teams.map((team) => {
-    const teamMatches = completedMatches.filter(
+    const teamMatches = completedLeagueMatches.filter(
       (m) => m.team1_id === team.id || m.team2_id === team.id
     )
-    const won = completedMatches.filter((m) => m.winner_id === team.id).length
-    const drawn = teamMatches.filter((m) => !m.winner_id).length
-    const lost = teamMatches.length - won - drawn
-    const points = won * 2 + drawn * 1
-    const nrr = calculateTeamNRR(team.id, completedMatches, matchPlayers)
+    const won = teamMatches.filter((m) => m.winner_id === team.id).length
+    const noResult = teamMatches.filter((m) => m.result_type === 'no_result').length
+    const tied = teamMatches.filter((m) => !m.winner_id && m.result_type !== 'no_result').length
+    const lost = teamMatches.filter((m) => m.winner_id && m.winner_id !== team.id).length
+    const points = won * 2 + tied * 1 + noResult * 1
+    const nrr = calculateTeamNRR(team.id, completedLeagueMatches, matchPlayers)
 
     return {
       team,
       played: teamMatches.length,
       won,
       lost,
-      drawn,
+      tied,
+      noResult,
       points,
       nrr,
     }
@@ -153,9 +157,10 @@ export default async function StatsPage() {
                       <th className="px-2 py-3.5 sm:p-4 text-center">Played</th>
                       <th className="px-2 py-3.5 sm:p-4 text-center">Won</th>
                       <th className="px-2 py-3.5 sm:p-4 text-center">Lost</th>
-                      <th className="px-2 py-3.5 sm:p-4 text-center">Tied/N/R</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">Tied</th>
+                      <th className="px-2 py-3.5 sm:p-4 text-center">No Result</th>
                       <th className="px-2 py-3.5 sm:p-4 text-center text-slate-500 w-24">NRR</th>
-                      <th className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-650 w-24">Points</th>
+                      <th className="px-2 py-3.5 sm:p-4 sm:pr-6 text-center font-black text-blue-655 w-24">Points</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-900 font-semibold">
@@ -203,7 +208,8 @@ export default async function StatsPage() {
                           <td className="px-2 py-3.5 sm:p-4 text-center text-rose-600 font-extrabold">
                             {row.lost}
                           </td>
-                          <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.drawn}</td>
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.tied}</td>
+                          <td className="px-2 py-3.5 sm:p-4 text-center text-slate-500">{row.noResult}</td>
                           <td className={`px-2 py-3.5 sm:p-4 text-center font-semibold text-xs ${row.nrr > 0 ? 'text-emerald-600' : row.nrr < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
                             {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
                           </td>

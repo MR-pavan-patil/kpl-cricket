@@ -55,6 +55,8 @@ export interface Match {
   balls_log: BallLogEvent[];
   winner_id: string | null;
   result_desc: string | null;
+  result_type?: 'win' | 'loss' | 'tie' | 'no_result' | null;
+  match_abandon_reason?: string | null;
   overs_limit: number;
   players_count: number;
   powerplay_overs: string | null;
@@ -64,6 +66,7 @@ export interface Match {
   current_non_striker_id: string | null;
   current_bowler_id: string | null;
   innings_number: number;
+  stage: 'league' | 'quarter_final' | 'semi_final_1' | 'semi_final_2' | 'final';
   created_at?: string;
   team1?: Team;
   team2?: Team;

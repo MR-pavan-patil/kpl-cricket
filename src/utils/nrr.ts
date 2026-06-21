@@ -17,6 +17,7 @@ export function calculateTeamNRR(
 
   for (const m of completedMatches) {
     if (m.team1_id !== teamId && m.team2_id !== teamId) continue
+    if (m.result_type === 'no_result') continue
 
     const isTeam1 = m.team1_id === teamId
     const oppId = isTeam1 ? m.team2_id : m.team1_id

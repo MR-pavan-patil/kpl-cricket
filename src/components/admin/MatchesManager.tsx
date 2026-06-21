@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Match, Team } from '@/types'
 import { createMatch, updateMatch, deleteMatch } from '@/app/actions/matches'
-import { Plus, Edit2, Trash2, Search, X, Loader2, Calendar, MapPin, Play, CheckCircle2, ShieldAlert, Settings } from 'lucide-react'
+import { resetMatchBallsLog } from '@/app/actions/matchEngine'
+import { Plus, Edit2, Trash2, Search, X, Loader2, Calendar, MapPin, Play, CheckCircle2, ShieldAlert, Settings, CloudRain } from 'lucide-react'
 
 interface MatchesManagerProps {
   initialMatches: Match[]
@@ -12,6 +13,21 @@ interface MatchesManagerProps {
 }
 
 const STATUS_OPTIONS = ['upcoming', 'live', 'completed']
+
+const getStageBadge = (stage: string) => {
+  switch (stage) {
+    case 'quarter_final':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-[9px] font-black uppercase tracking-wider">Quarter Final</span>
+    case 'semi_final_1':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-[9px] font-black uppercase tracking-wider">Semi 1</span>
+    case 'semi_final_2':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-[9px] font-black uppercase tracking-wider">Semi 2</span>
+    case 'final':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 border border-amber-250 text-amber-800 text-[9px] font-black uppercase tracking-wider font-extrabold">Final</span>
+    default:
+      return <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-black uppercase tracking-wider">League</span>
+  }
+}
 
 export default function MatchesManager({ initialMatches, teams }: MatchesManagerProps) {
   const [matches, setMatches] = useState<Match[]>(initialMatches)
@@ -28,8 +44,13 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
   const [matchTimeOnly, setMatchTimeOnly] = useState('')
   const [venue, setVenue] = useState('')
   const [status, setStatus] = useState(STATUS_OPTIONS[0])
+  const [stage, setStage] = useState('league')
   const [winnerId, setWinnerId] = useState('')
   const [resultDesc, setResultDesc] = useState('')
+  const [resultType, setResultType] = useState('win') // 'win' | 'tie' | 'no_result'
+  const [matchAbandonReason, setMatchAbandonReason] = useState('Rain')
+
+  const ABANDON_REASONS = ['Rain', 'Bad Weather', 'Ground Issue', 'Light Failure', 'Technical Issue']
 
   // Filter matches by teams search
   const filteredMatches = matches.filter((match) => {
@@ -48,8 +69,11 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     setMatchTimeOnly('')
     setVenue('')
     setStatus(STATUS_OPTIONS[0])
+    setStage('league')
     setWinnerId('')
     setResultDesc('')
+    setResultType('win')
+    setMatchAbandonReason('Rain')
     setError(null)
     setIsModalOpen(true)
   }
@@ -65,8 +89,11 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     setMatchTimeOnly(d.toTimeString().slice(0, 5))
     setVenue(match.venue)
     setStatus(match.status)
+    setStage(match.stage || 'league')
     setWinnerId(match.winner_id || '')
     setResultDesc(match.result_desc || '')
+    setResultType(match.result_type || 'win')
+    setMatchAbandonReason(match.match_abandon_reason || 'Rain')
     setError(null)
     setIsModalOpen(true)
   }
@@ -88,8 +115,18 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     formData.append('match_date', combinedDatetime)
     formData.append('venue', venue)
     formData.append('status', status)
-    formData.append('winner_id', winnerId)
-    formData.append('result_desc', resultDesc)
+    formData.append('stage', stage)
+
+    const isKnockout = stage === 'semi_final_1' || stage === 'semi_final_2' || stage === 'final'
+    if (status === 'completed' && isKnockout && resultType === 'no_result') {
+      setError('Knockout matches (Semi-Finals & Finals) cannot be completed as No Result. Please use Reserve Day, Replay, or manually declare a winner.')
+      return
+    }
+
+    formData.append('winner_id', resultType === 'win' ? winnerId : '')
+    formData.append('result_desc', resultType === 'win' ? resultDesc : (resultType === 'tie' ? 'Match Tied' : `No Result (${matchAbandonReason})`))
+    formData.append('result_type', resultType)
+    formData.append('match_abandon_reason', resultType === 'no_result' ? matchAbandonReason : '')
 
     startTransition(async () => {
       let result
@@ -101,6 +138,21 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
 
       if (result.error) {
         setError(result.error)
+      } else {
+        window.location.reload()
+      }
+    })
+  }
+
+  const handleReplayMatch = async () => {
+    if (!editingMatch) return
+    if (!confirm('Are you sure you want to replay this match? This will delete all logged balls, reset the scores to 0, and clear playing XI rosters.')) {
+      return
+    }
+    startTransition(async () => {
+      const res = await resetMatchBallsLog(editingMatch.id)
+      if (res.error) {
+        setError(res.error)
       } else {
         window.location.reload()
       }
@@ -189,6 +241,7 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {getStageBadge(match.stage)}
                       {isLive && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200/50 text-red-650 text-[10px] font-black uppercase tracking-widest animate-pulse">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" /> Live
@@ -369,6 +422,21 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
               </div>
 
               <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Match Stage *</label>
+                <select
+                  value={stage}
+                  onChange={(e) => setStage(e.target.value)}
+                  className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-bold cursor-pointer"
+                >
+                  <option value="league">League Match</option>
+                  <option value="quarter_final">Quarter Final</option>
+                  <option value="semi_final_1">Semi Final 1</option>
+                  <option value="semi_final_2">Semi Final 2</option>
+                  <option value="final">Final</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Venue *</label>
                 <input
                   type="text"
@@ -400,30 +468,113 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Select Winner</label>
-                      <select
-                        value={winnerId}
-                        onChange={(e) => setWinnerId(e.target.value)}
-                        className="mt-1.5 block w-full px-3 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none font-bold"
-                      >
-                        <option value="">No Winner (Draw/Upcoming)</option>
-                        <option value={editingMatch.team1_id}>{teams.find((t) => t.id === editingMatch.team1_id)?.name}</option>
-                        <option value={editingMatch.team2_id}>{teams.find((t) => t.id === editingMatch.team2_id)?.name}</option>
-                      </select>
-                    </div>
+                    {status === 'completed' && (
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Outcome Type</label>
+                        <select
+                          value={resultType}
+                          onChange={(e) => setResultType(e.target.value)}
+                          className="mt-1.5 block w-full px-3 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none font-bold"
+                        >
+                          <option value="win">Win / Loss</option>
+                          <option value="tie">Tie</option>
+                          <option value="no_result">No Result (NR)</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Result Description</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Mumbai won by 5 wickets"
-                      value={resultDesc}
-                      onChange={(e) => setResultDesc(e.target.value)}
-                      className="mt-1.5 block w-full px-3 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                    />
-                  </div>
+                  {status === 'completed' && resultType === 'win' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Select Winner</label>
+                        <select
+                          value={winnerId}
+                          onChange={(e) => setWinnerId(e.target.value)}
+                          className="mt-1.5 block w-full px-3 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none font-bold"
+                        >
+                          <option value="">No Winner (Draw/Upcoming)</option>
+                          <option value={editingMatch.team1_id}>{teams.find((t) => t.id === editingMatch.team1_id)?.name}</option>
+                          <option value={editingMatch.team2_id}>{teams.find((t) => t.id === editingMatch.team2_id)?.name}</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Result Description</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Mumbai won by 5 wickets"
+                          value={resultDesc}
+                          onChange={(e) => setResultDesc(e.target.value)}
+                          className="mt-1.5 block w-full px-3.5 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {status === 'completed' && resultType === 'tie' && (
+                    <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold leading-normal">
+                      ℹ️ Tied match will award 1 point to both teams. Teams leaderboards will remain active.
+                    </div>
+                  )}
+
+                  {status === 'completed' && resultType === 'no_result' && (
+                    <>
+                      {/* If it's a knockout match, prevent NR and show policy guidelines */}
+                      {(stage === 'semi_final_1' || stage === 'semi_final_2' || stage === 'final') ? (
+                        <div className="p-4 rounded-xl bg-amber-50 border border-amber-250 text-amber-900 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-black uppercase text-amber-800">
+                            <CloudRain className="h-4 w-4" /> Knockout Protocol Required
+                          </div>
+                          <p className="text-[11px] font-bold leading-relaxed">
+                            Semi-Finals and Finals cannot be completed as "No Result". Please choose one of the official tournament resolutions:
+                          </p>
+                          <div className="space-y-2.5 pt-1 text-[11px]">
+                            <div>
+                              <strong className="block text-xs text-amber-905">1. Reserve Day</strong>
+                              <span className="text-amber-800/80">Change the Match Date and Time above to schedule play on the official Reserve Day.</span>
+                            </div>
+                            <div className="border-t border-amber-200/50 pt-2">
+                              <strong className="block text-xs text-amber-905">2. Replay Match</strong>
+                              <span className="text-amber-800/80 block mb-1.5">Reset all scorecard records and start the match again.</span>
+                              <button
+                                type="button"
+                                onClick={handleReplayMatch}
+                                disabled={isPending}
+                                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-extrabold uppercase transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                              >
+                                {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Reset & Replay Scorecard'}
+                              </button>
+                            </div>
+                            <div className="border-t border-amber-200/50 pt-2">
+                              <strong className="block text-xs text-amber-905">3. Tournament Rules Decision</strong>
+                              <span className="text-amber-800/80">Select "Win/Loss" outcome type to manually award a win based on league standings or custom guidelines.</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Reason for Abandonment</label>
+                            <select
+                              value={matchAbandonReason}
+                              onChange={(e) => setMatchAbandonReason(e.target.value)}
+                              className="mt-1.5 block w-full px-3 py-2 rounded-xl bg-white border border-slate-250 text-slate-900 text-xs focus:outline-none font-bold cursor-pointer"
+                            >
+                              {ABANDON_REASONS.map((r) => (
+                                <option key={r} value={r}>
+                                  {r}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-655 text-xs font-bold leading-normal">
+                            ℹ️ Both teams will receive 1 point. Net Run Rate (NRR) will not be affected. Career stats will be protected.
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
 

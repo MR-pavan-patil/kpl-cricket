@@ -48,6 +48,8 @@ create table matches (
   balls_log jsonb default '[]'::jsonb not null,
   winner_id uuid references teams(id) on delete set null,
   result_desc text,
+  result_type text check (result_type in ('win', 'loss', 'tie', 'no_result')),
+  match_abandon_reason text,
   overs_limit integer default 20 not null,
   players_count integer default 11 not null,
   powerplay_overs text,
@@ -57,6 +59,7 @@ create table matches (
   current_non_striker_id uuid references players(id) on delete set null,
   current_bowler_id uuid references players(id) on delete set null,
   innings_number integer default 1 not null,
+  stage text check (stage in ('league', 'quarter_final', 'semi_final_1', 'semi_final_2', 'final')) default 'league' not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

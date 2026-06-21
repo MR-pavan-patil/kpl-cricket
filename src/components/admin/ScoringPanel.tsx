@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Match, Team, BallLogEvent, Player } from '@/types'
-import { recordMatchEngineBall, undoMatchEngineBall, setScoringState, selectNextBatsman } from '@/app/actions/matchEngine'
+import { recordMatchEngineBall, undoMatchEngineBall, setScoringState, selectNextBatsman, abandonMatch, resetMatchBallsLog } from '@/app/actions/matchEngine'
 import { calculateScorecard, formatOvers } from '@/utils/scorecard'
 import { createClient } from '@/utils/supabase/client'
 import {
@@ -21,7 +21,8 @@ import {
   Award,
   ChevronRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  CloudRain
 } from 'lucide-react'
 
 interface ScoringPanelProps {
@@ -44,8 +45,12 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
   const [showWicketModal, setShowWicketModal] = useState<boolean>(false)
   const [wicketType, setWicketType] = useState<'bowled' | 'caught' | 'run_out' | 'lbw' | 'stumped' | 'retired_hurt'>('bowled')
   const [dismissedBatsmanId, setDismissedBatsmanId] = useState<string>('')
+  const [runOutRuns, setRunOutRuns] = useState<number>(0)
 
   const [showExtraModal, setShowExtraModal] = useState<'wide' | 'no_ball' | 'bye' | 'leg_bye' | null>(null)
+  
+  const [showAbandonModal, setShowAbandonModal] = useState<boolean>(false)
+  const [abandonReason, setAbandonReason] = useState<string>('Rain')
 
   // Realtime subscription
   useEffect(() => {
@@ -168,6 +173,26 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
     })
   }
 
+  // Automatically open player selection modal when striker, non-striker, or bowler is missing
+  useEffect(() => {
+    if (match.status === 'live' && !isPending && !showPlayerModal && !showWicketModal && !showExtraModal) {
+      const activeStriker = match.current_striker_id
+      const activeNonStriker = match.current_non_striker_id
+      const activeBowler = match.current_bowler_id
+
+      const availableBatsmenCount = getAvailableBatsmen().length
+      const availableBowlersCount = getAvailableBowlers().length
+
+      if (!activeStriker && availableBatsmenCount > 0) {
+        openPlayerSelection('striker')
+      } else if (!activeNonStriker && availableBatsmenCount > 0) {
+        openPlayerSelection('non_striker')
+      } else if (!activeBowler && availableBowlersCount > 0) {
+        openPlayerSelection('bowler')
+      }
+    }
+  }, [match.current_striker_id, match.current_non_striker_id, match.current_bowler_id, match.status, isPending, showPlayerModal, showWicketModal, showExtraModal])
+
   const handleRecordBallInput = (
     runs: number,
     extra_runs: number,
@@ -237,6 +262,39 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
     })
   }
 
+  const triggerAbandon = () => {
+    setAbandonReason('Rain')
+    setShowAbandonModal(true)
+  }
+
+  const handleConfirmAbandon = () => {
+    setError(null)
+    setShowAbandonModal(false)
+    startTransition(async () => {
+      const res = await abandonMatch(match.id, abandonReason)
+      if (res.error) {
+        setError(res.error)
+      } else {
+        router.push('/admin/matches')
+      }
+    })
+  }
+
+  const handleReplayMatch = async () => {
+    if (!confirm('Are you sure you want to replay this match? This will delete all logged balls, reset the scores to 0, and clear playing XI rosters.')) {
+      return
+    }
+    setShowAbandonModal(false)
+    startTransition(async () => {
+      const res = await resetMatchBallsLog(match.id)
+      if (res.error) {
+        setError(res.error)
+      } else {
+        window.location.reload()
+      }
+    })
+  }
+
   // Wicket Trigger
   const triggerWicket = () => {
     if (!match.current_striker_id || !match.current_non_striker_id || !match.current_bowler_id) {
@@ -245,12 +303,13 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
     }
     setDismissedBatsmanId(match.current_striker_id) // Default to striker
     setWicketType('bowled')
+    setRunOutRuns(0)
     setShowWicketModal(true)
   }
 
   const handleConfirmWicket = () => {
     handleRecordBallInput(
-      0,
+      wicketType === 'run_out' ? runOutRuns : 0,
       0,
       null,
       true,
@@ -278,9 +337,11 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
 
   // Target details for 2nd innings
   const isSecondInnings = match.innings_number === 2
-  const targetRuns = isSecondInnings ? match.team1_runs + 1 : 0
-  const runsNeeded = isSecondInnings ? targetRuns - match.team2_runs : 0
-  const ballsRemaining = isSecondInnings ? match.overs_limit * 6 - match.team2_balls : 0
+  const targetRuns = isSecondInnings 
+    ? (isTeam1Batting ? match.team2_runs + 1 : match.team1_runs + 1)
+    : 0
+  const runsNeeded = isSecondInnings ? targetRuns - (isTeam1Batting ? match.team1_runs : match.team2_runs) : 0
+  const ballsRemaining = isSecondInnings ? match.overs_limit * 6 - (isTeam1Batting ? match.team1_balls : match.team2_balls) : 0
 
   const calculateRRR = () => {
     if (ballsRemaining <= 0) return '0.00'
@@ -604,6 +665,17 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
                 </button>
               </div>
             </div>
+
+            {/* Abandon Match Button */}
+            <div className="pt-4 border-t border-slate-150 mt-4 flex justify-end">
+              <button
+                onClick={triggerAbandon}
+                disabled={isPending}
+                className="px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-105 border border-amber-200 text-amber-700 font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <AlertCircle className="h-4 w-4" /> Abandon Match (No Result)
+              </button>
+            </div>
           </section>
         </div>
 
@@ -802,6 +874,28 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
                 </select>
               </div>
 
+              {wicketType === 'run_out' && (
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-3">Runs Completed Before Run Out *</label>
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    {[0, 1, 2, 3].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRunOutRuns(r)}
+                        className={`p-2.5 rounded-xl border text-xs font-black transition-all cursor-pointer ${
+                          runOutRuns === r
+                            ? 'bg-amber-50 border-amber-300 text-amber-800'
+                            : 'bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowWicketModal(false)}
@@ -928,10 +1022,97 @@ export default function ScoringPanel({ initialMatch, teamA, teamB, matchPlayers 
 
             <button
               onClick={() => setShowExtraModal(null)}
-              className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 text-slate-650 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
+              className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 text-slate-655 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: ABANDON MATCH */}
+      {showAbandonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowAbandonModal(false)} />
+          <div className="relative bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-150 pb-2 flex items-center gap-1.5">
+              <CloudRain className="h-4.5 w-4.5 text-amber-600" />
+              Abandon Match
+            </h3>
+
+            {/* Knockout Match restriction */}
+            {(match.stage === 'semi_final_1' || match.stage === 'semi_final_2' || match.stage === 'final') ? (
+              <div className="space-y-4">
+                <p className="text-[11px] font-bold text-amber-800 leading-relaxed bg-amber-50 p-3 rounded-xl border border-amber-200">
+                  ⚠️ Semi-Finals and Finals cannot be completed as "No Result". Please choose one of the official knockout resolutions below:
+                </p>
+                <div className="space-y-3 text-[11px] font-medium text-slate-600">
+                  <div>
+                    <strong className="block text-xs text-slate-850">1. Reserve Day</strong>
+                    <span className="text-slate-500">Reschedule the fixture date in the matches scheduler.</span>
+                  </div>
+                  <div className="border-t border-slate-100 pt-2.5">
+                    <strong className="block text-xs text-slate-855">2. Replay Match</strong>
+                    <span className="text-slate-500 block mb-2">Delete all logged ball events and start the match again.</span>
+                    <button
+                      type="button"
+                      onClick={handleReplayMatch}
+                      disabled={isPending}
+                      className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[10px] font-extrabold uppercase transition-all shadow-sm cursor-pointer"
+                    >
+                      Reset &amp; Replay Match
+                    </button>
+                  </div>
+                  <div className="border-t border-slate-100 pt-2.5">
+                    <strong className="block text-xs text-slate-850">3. Tournament Rules Decision</strong>
+                    <span className="text-slate-500">Award a manual win to a team using the scheduling override modal.</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAbandonModal(false)}
+                  className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Reason for Abandonment *</label>
+                  <select
+                    value={abandonReason}
+                    onChange={(e) => setAbandonReason(e.target.value)}
+                    className="block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-850 text-xs font-bold focus:ring-2 focus:ring-amber-500/20 cursor-pointer focus:outline-none"
+                  >
+                    <option value="Rain">Rain</option>
+                    <option value="Bad Weather">Bad Weather</option>
+                    <option value="Ground Issue">Ground Issue</option>
+                    <option value="Light Failure">Light Failure</option>
+                    <option value="Technical Issue">Technical Issue</option>
+                  </select>
+                </div>
+                
+                <p className="text-[10px] text-slate-505 font-bold leading-normal bg-slate-50 p-3 rounded-xl border border-slate-205">
+                  ℹ️ Both teams will receive 1 point on the standings table. Net Run Rate (NRR) will not be affected.
+                </p>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowAbandonModal(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmAbandon}
+                    disabled={isPending}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
+                  >
+                    Confirm Abandon
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

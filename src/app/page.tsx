@@ -48,24 +48,27 @@ export default async function Home() {
   const liveMatches = matches.filter((m) => m.status === 'live')
   const upcomingMatches = matches.filter((m) => m.status === 'upcoming').slice(0, 3)
   const completedMatches = matches.filter((m) => m.status === 'completed')
+  const completedLeagueMatches = completedMatches.filter((m) => m.stage === 'league' || !m.stage)
 
   // Calculate Points Table Standing
   const pointsTable = teams.map((team) => {
-    const teamMatches = completedMatches.filter(
+    const teamMatches = completedLeagueMatches.filter(
       (m) => m.team1_id === team.id || m.team2_id === team.id
     )
-    const won = completedMatches.filter((m) => m.winner_id === team.id).length
-    const drawn = teamMatches.filter((m) => !m.winner_id).length
-    const lost = teamMatches.length - won - drawn
-    const points = won * 2 + drawn * 1
-    const nrr = calculateTeamNRR(team.id, completedMatches, matchPlayers)
+    const won = teamMatches.filter((m) => m.winner_id === team.id).length
+    const noResult = teamMatches.filter((m) => m.result_type === 'no_result').length
+    const tied = teamMatches.filter((m) => !m.winner_id && m.result_type !== 'no_result').length
+    const lost = teamMatches.filter((m) => m.winner_id && m.winner_id !== team.id).length
+    const points = won * 2 + tied * 1 + noResult * 1
+    const nrr = calculateTeamNRR(team.id, completedLeagueMatches, matchPlayers)
 
     return {
       team,
       played: teamMatches.length,
       won,
       lost,
-      drawn,
+      tied,
+      noResult,
       points,
       nrr,
     }
@@ -210,9 +213,11 @@ export default async function Home() {
                   <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold uppercase text-[10px]">
                     <th className="p-3.5 pl-5 w-10 text-center">Pos</th>
                     <th className="p-3.5">Team</th>
-                    <th className="p-3.5 text-center">Played</th>
-                    <th className="p-3.5 text-center">Won</th>
-                    <th className="p-3.5 text-center">Lost</th>
+                    <th className="p-3.5 text-center">P</th>
+                    <th className="p-3.5 text-center">W</th>
+                    <th className="p-3.5 text-center">L</th>
+                    <th className="p-3.5 text-center">T</th>
+                    <th className="p-3.5 text-center">NR</th>
                     <th className="p-3.5 text-center text-gray-500 w-20">NRR</th>
                     <th className="p-3.5 text-center font-bold text-blue-600 w-16">PTS</th>
                   </tr>
@@ -238,7 +243,9 @@ export default async function Home() {
                       </td>
                       <td className="p-3.5 text-center text-gray-500">{row.played}</td>
                       <td className="p-3.5 text-center text-emerald-650">{row.won}</td>
-                      <td className="p-3.5 text-center text-red-600">{row.lost}</td>
+                      <td className="p-3.5 text-center text-rose-600">{row.lost}</td>
+                      <td className="p-3.5 text-center text-slate-500">{row.tied}</td>
+                      <td className="p-3.5 text-center text-slate-500">{row.noResult}</td>
                       <td className={`p-3.5 text-center font-semibold ${row.nrr > 0 ? 'text-emerald-600' : row.nrr < 0 ? 'text-rose-600' : 'text-gray-500'}`}>
                         {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
                       </td>

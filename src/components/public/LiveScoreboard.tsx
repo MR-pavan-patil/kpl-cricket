@@ -183,17 +183,29 @@ export default function LiveScoreboard({
             </span>
           )}
           {match.status === 'completed' && (
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-black border border-emerald-250/50 uppercase tracking-wider">
-              Match Completed
-            </span>
+            match.result_type === 'no_result' ? (
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-50 text-amber-800 text-xs font-black border border-amber-300 uppercase tracking-wider">
+                No Result
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-black border border-emerald-250/50 uppercase tracking-wider">
+                Match Completed
+              </span>
+            )
           )}
         </div>
 
         {/* Completed Match Outcome Result */}
         {match.status === 'completed' && match.result_desc && (
-          <div className="w-full text-center bg-emerald-50/40 border border-emerald-100/60 py-3 px-4 rounded-2xl text-xs sm:text-sm font-black text-emerald-850 mb-6 max-w-xl">
-            🏆 {match.result_desc}
-          </div>
+          match.result_type === 'no_result' ? (
+            <div className="w-full text-center bg-amber-50/70 border border-amber-200/60 py-3 px-4 rounded-2xl text-xs sm:text-sm font-black text-amber-800 mb-6 max-w-xl">
+              🌧️ {match.result_desc}
+            </div>
+          ) : (
+            <div className="w-full text-center bg-emerald-50/40 border border-emerald-100/60 py-3 px-4 rounded-2xl text-xs sm:text-sm font-black text-emerald-850 mb-6 max-w-xl">
+              🏆 {match.result_desc}
+            </div>
+          )
         )}
 
         {/* Main Teams & Large Score Container */}

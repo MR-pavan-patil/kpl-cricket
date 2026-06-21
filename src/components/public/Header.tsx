@@ -14,6 +14,7 @@ export default function Header() {
     { name: 'Teams', path: '/teams' },
     { name: 'Schedule', path: '/schedule' },
     { name: 'Stats', path: '/stats' },
+    { name: 'Bracket', path: '/bracket' },
   ]
 
   const isActive = (path: string) => {
