@@ -45,6 +45,8 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
   const [venue, setVenue] = useState('')
   const [status, setStatus] = useState(STATUS_OPTIONS[0])
   const [stage, setStage] = useState('league')
+  const [season, setSeason] = useState(2) // Default new matches to Season 2!
+  const [selectedSeasonFilter, setSelectedSeasonFilter] = useState<'all' | '1' | '2'>('all')
   const [winnerId, setWinnerId] = useState('')
   const [resultDesc, setResultDesc] = useState('')
   const [resultType, setResultType] = useState('win') // 'win' | 'tie' | 'no_result'
@@ -52,13 +54,15 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
 
   const ABANDON_REASONS = ['Rain', 'Bad Weather', 'Ground Issue', 'Light Failure', 'Technical Issue']
 
-  // Filter matches by teams search
+  // Filter matches by teams search and season
   const filteredMatches = matches.filter((match) => {
     const t1 = teams.find((t) => t.id === match.team1_id)?.name || ''
     const t2 = teams.find((t) => t.id === match.team2_id)?.name || ''
     const v = match.venue || ''
     const term = search.toLowerCase()
-    return t1.toLowerCase().includes(term) || t2.toLowerCase().includes(term) || v.toLowerCase().includes(term)
+    const matchSeason = match.season || 1
+    const passesSeason = selectedSeasonFilter === 'all' || String(matchSeason) === selectedSeasonFilter
+    return passesSeason && (t1.toLowerCase().includes(term) || t2.toLowerCase().includes(term) || v.toLowerCase().includes(term))
   })
 
   const openAddModal = () => {
@@ -70,6 +74,7 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     setVenue('')
     setStatus(STATUS_OPTIONS[0])
     setStage('league')
+    setSeason(2) // Default new match to Season 2
     setWinnerId('')
     setResultDesc('')
     setResultType('win')
@@ -90,6 +95,7 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     setVenue(match.venue)
     setStatus(match.status)
     setStage(match.stage || 'league')
+    setSeason(match.season || 1)
     setWinnerId(match.winner_id || '')
     setResultDesc(match.result_desc || '')
     setResultType(match.result_type || 'win')
@@ -116,6 +122,7 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     formData.append('venue', venue)
     formData.append('status', status)
     formData.append('stage', stage)
+    formData.append('season', String(season))
 
     const isKnockout = stage === 'semi_final_1' || stage === 'semi_final_2' || stage === 'final'
     if (status === 'completed' && isKnockout && resultType === 'no_result') {
@@ -182,23 +189,53 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     <div className="space-y-6">
       {/* Search and Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-center animate-fade-in-up">
-        <div className="relative w-full sm:w-80">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <Search className="h-4 w-4" />
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
+          <div className="relative w-full sm:w-72">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Search className="h-4 w-4" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search team or venue..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="block w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all text-sm font-medium"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search team or venue..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all text-sm font-medium"
-          />
+
+          <div className="flex items-center p-1 rounded-xl bg-slate-200/70 text-xs font-bold w-full sm:w-auto justify-center">
+            <button
+              onClick={() => setSelectedSeasonFilter('all')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                selectedSeasonFilter === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              All Seasons
+            </button>
+            <button
+              onClick={() => setSelectedSeasonFilter('1')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                selectedSeasonFilter === '1' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Season 1
+            </button>
+            <button
+              onClick={() => setSelectedSeasonFilter('2')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                selectedSeasonFilter === '2' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Season 2 🔥
+            </button>
+          </div>
         </div>
+
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all shadow-md shadow-blue-200 cursor-pointer"
         >
-          <Plus className="h-4.5 w-4.5" /> Schedule Match
+          <Plus className="h-4.5 w-4.5" /> Schedule Match (Season 2)
         </button>
       </div>
 
@@ -421,19 +458,33 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Match Stage *</label>
-                <select
-                  value={stage}
-                  onChange={(e) => setStage(e.target.value)}
-                  className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-bold cursor-pointer"
-                >
-                  <option value="league">League Match</option>
-                  <option value="quarter_final">Quarter Final</option>
-                  <option value="semi_final_1">Semi Final 1</option>
-                  <option value="semi_final_2">Semi Final 2</option>
-                  <option value="final">Final</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Tournament Season *</label>
+                  <select
+                    value={season}
+                    onChange={(e) => setSeason(Number(e.target.value))}
+                    className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-bold cursor-pointer"
+                  >
+                    <option value={1}>Season 1 (Historical)</option>
+                    <option value={2}>Season 2 (Current Active)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Match Stage *</label>
+                  <select
+                    value={stage}
+                    onChange={(e) => setStage(e.target.value)}
+                    className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-bold cursor-pointer"
+                  >
+                    <option value="league">League Match</option>
+                    <option value="quarter_final">Quarter Final</option>
+                    <option value="semi_final_1">Semi Final 1</option>
+                    <option value="semi_final_2">Semi Final 2</option>
+                    <option value="final">Final</option>
+                  </select>
+                </div>
               </div>
 
               <div>

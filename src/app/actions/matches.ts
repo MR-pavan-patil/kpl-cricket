@@ -11,6 +11,7 @@ export async function createMatch(formData: FormData) {
   const venue = formData.get('venue') as string
   const status = formData.get('status') as string
   const stage = formData.get('stage') as string || 'league'
+  const season = parseInt((formData.get('season') as string) || '2', 10)
 
   if (!team1_id || !team2_id || !match_date || !venue || !status) {
     return { error: 'All fields are required.' }
@@ -21,14 +22,23 @@ export async function createMatch(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.from('matches').insert({
+  const insertData: any = {
     team1_id,
     team2_id,
     match_date,
     venue,
     status,
     stage,
-  })
+    season,
+  }
+  let { error } = await supabase.from('matches').insert(insertData)
+
+  // Fallback if season column doesn't exist yet on DB
+  if (error && error.message.includes('season')) {
+    delete insertData.season
+    const fallbackRes = await supabase.from('matches').insert(insertData)
+    error = fallbackRes.error
+  }
 
   if (error) {
     return { error: error.message }
@@ -51,6 +61,7 @@ export async function updateMatch(id: string, formData: FormData) {
   const winner_id = formData.get('winner_id') as string
   const result_desc = formData.get('result_desc') as string
   const stage = formData.get('stage') as string || 'league'
+  const season = parseInt((formData.get('season') as string) || '1', 10)
   const result_type = formData.get('result_type') as string || null
   const match_abandon_reason = formData.get('match_abandon_reason') as string || null
 
@@ -76,21 +87,33 @@ export async function updateMatch(id: string, formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase
+  const updateData: any = {
+    team1_id,
+    team2_id,
+    match_date,
+    venue,
+    status,
+    winner_id: updatedWinnerId,
+    result_desc: updatedResultDesc,
+    stage,
+    season,
+    result_type,
+    match_abandon_reason: result_type === 'no_result' ? match_abandon_reason : null,
+  }
+  let { error } = await supabase
     .from('matches')
-    .update({
-      team1_id,
-      team2_id,
-      match_date,
-      venue,
-      status,
-      winner_id: updatedWinnerId,
-      result_desc: updatedResultDesc,
-      stage,
-      result_type,
-      match_abandon_reason: result_type === 'no_result' ? match_abandon_reason : null,
-    })
+    .update(updateData)
     .eq('id', id)
+
+  // Fallback if season column doesn't exist yet on DB
+  if (error && error.message.includes('season')) {
+    delete updateData.season
+    const fallbackRes = await supabase
+      .from('matches')
+      .update(updateData)
+      .eq('id', id)
+    error = fallbackRes.error
+  }
 
   if (error) {
     return { error: error.message }

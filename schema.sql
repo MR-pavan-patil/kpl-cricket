@@ -18,7 +18,7 @@ create table teams (
 -- Players Table
 create table players (
   id uuid default gen_random_uuid() primary key,
-  team_id uuid references teams(id) on delete cascade not null,
+  team_id uuid references teams(id) on delete set null, -- nullable for free agents / released players
   name text not null,
   role text not null, -- 'Batsman' | 'Bowler' | 'All Rounder' | 'Wicket Keeper'
   jersey_number integer not null,
@@ -27,6 +27,7 @@ create table players (
   fours integer default 0 not null,
   sixes integer default 0 not null,
   matches_played integer default 0 not null,
+  is_active boolean default true not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -60,8 +61,12 @@ create table matches (
   current_bowler_id uuid references players(id) on delete set null,
   innings_number integer default 1 not null,
   stage text check (stage in ('league', 'quarter_final', 'semi_final_1', 'semi_final_2', 'final')) default 'league' not null,
+  season integer default 1 not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Migration query for existing databases:
+-- ALTER TABLE matches ADD COLUMN IF NOT EXISTS season integer DEFAULT 1 NOT NULL;
 
 -- Match Players Table (Playing XI Selection)
 create table match_players (

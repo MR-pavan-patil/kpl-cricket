@@ -51,7 +51,12 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
 
   // Filter players by team, role, and search query
   const filteredPlayers = players.filter((player) => {
-    const matchesTeam = selectedTeamId === 'all' || player.team_id === selectedTeamId
+    let matchesTeam = true
+    if (selectedTeamId === 'unassigned') {
+      matchesTeam = !player.team_id || player.team_id === ''
+    } else if (selectedTeamId !== 'all') {
+      matchesTeam = player.team_id === selectedTeamId
+    }
     const matchesRole = selectedRole === 'all' || player.role.toLowerCase() === selectedRole.toLowerCase()
     const matchesSearch = player.name.toLowerCase().includes(search.toLowerCase())
     return matchesTeam && matchesRole && matchesSearch
@@ -60,7 +65,12 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
   // Count players for each role based on team filter
   const getRoleCount = (roleId: string) => {
     return players.filter(p => {
-      const matchesTeam = selectedTeamId === 'all' || p.team_id === selectedTeamId
+      let matchesTeam = true
+      if (selectedTeamId === 'unassigned') {
+        matchesTeam = !p.team_id || p.team_id === ''
+      } else if (selectedTeamId !== 'all') {
+        matchesTeam = p.team_id === selectedTeamId
+      }
       const matchesRole = roleId === 'all' || p.role.toLowerCase() === roleId.toLowerCase()
       return matchesTeam && matchesRole
     }).length
@@ -74,7 +84,7 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
   const openAddModal = () => {
     setEditingPlayer(null)
     setName('')
-    setTeamId(selectedTeamId !== 'all' ? selectedTeamId : teams[0]?.id || '')
+    setTeamId(selectedTeamId !== 'all' && selectedTeamId !== 'unassigned' ? selectedTeamId : '')
     setRole(PLAYER_ROLES[0])
     setJerseyNumber('')
     setRuns('0')
@@ -89,7 +99,7 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
   const openEditModal = (player: Player) => {
     setEditingPlayer(player)
     setName(player.name)
-    setTeamId(player.team_id)
+    setTeamId(player.team_id || '')
     setRole(player.role)
     setJerseyNumber(player.jersey_number.toString())
     setRuns((player.runs ?? 0).toString())
@@ -104,11 +114,6 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    if (!teamId) {
-      setError('Please select a team.')
-      return
-    }
 
     const formData = new FormData()
     formData.append('name', name)
@@ -147,7 +152,7 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete player "${name}"?`)) {
+    if (!confirm(`Are you sure you want to remove player "${name}"?`)) {
       return
     }
 
@@ -156,6 +161,9 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
       if (result.error) {
         alert(result.error)
       } else {
+        if (result.preserved && result.message) {
+          alert(result.message)
+        }
         window.location.reload()
       }
     })
@@ -224,6 +232,7 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
             className="block px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer font-bold shrink-0"
           >
             <option value="all">All Teams</option>
+            <option value="unassigned">Free Agents / Pool (No Team)</option>
             {teams.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -430,6 +439,7 @@ export default function PlayersManager({ initialPlayers, teams }: PlayersManager
                     onChange={(e) => setTeamId(e.target.value)}
                     className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-bold cursor-pointer"
                   >
+                    <option value="">None / Free Agent (Unassigned)</option>
                     {teams.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.name}

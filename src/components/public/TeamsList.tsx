@@ -126,7 +126,7 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
   }
 
   // Dynamic calculations for Player statistics
-  const getPlayerStats = (playerId: string, teamId: string) => {
+  const getPlayerStats = (playerId: string, teamId: string | null) => {
     let tournamentRuns = 0
     let tournamentBalls = 0
     let tournamentFours = 0
@@ -141,9 +141,9 @@ export default function TeamsList({ initialTeams, initialPlayers, initialMatches
     let matchHistory: any[] = []
 
     matches.forEach((m) => {
-      const isTeam1 = m.team1_id === teamId
-      const isTeam2 = m.team2_id === teamId
-      if (!isTeam1 && !isTeam2) return // Player's team didn't play
+      const isTeam1 = teamId ? m.team1_id === teamId : true
+      const isTeam2 = teamId ? m.team2_id === teamId : true
+      if (teamId && !isTeam1 && !isTeam2) return // Player's team didn't play
 
       if (m.status === 'upcoming') return
 

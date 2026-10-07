@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Team, Player } from '@/types'
 import { createTeam, updateTeam, deleteTeam } from '@/app/actions/teams'
-import { createPlayer, updatePlayer, deletePlayer } from '@/app/actions/players'
+import { createPlayer, updatePlayer, deletePlayer, releasePlayerFromTeam, transferPlayer } from '@/app/actions/players'
 import { updatePlayerStats } from '@/app/actions/stats'
 import { 
   Plus, 
@@ -21,17 +21,24 @@ import {
   Target, 
   ChevronRight, 
   Users,
-  UserPlus
+  UserPlus,
+  UserMinus,
+  ArrowRightLeft,
+  UserCheck,
+  Sparkles,
+  Info
 } from 'lucide-react'
 
 interface TeamsManagerProps {
   initialTeams: Team[]
+  allPlayers?: Player[]
 }
 
 const PLAYER_ROLES = ['Batsman', 'Bowler', 'All Rounder', 'Wicket Keeper']
 
-export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
+export default function TeamsManager({ initialTeams, allPlayers = [] }: TeamsManagerProps) {
   const [teams, setTeams] = useState<Team[]>(initialTeams)
+  const [poolPlayers, setPoolPlayers] = useState<Player[]>(allPlayers)
   const [search, setSearch] = useState('')
   
   // Team Modal States
@@ -66,6 +73,12 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
   const [error, setError] = useState<string | null>(null)
   const [playerError, setPlayerError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Season 2 Squad Management States
+  const [isAssignExistingOpen, setIsAssignExistingOpen] = useState(false)
+  const [poolSearch, setPoolSearch] = useState('')
+  const [transferModalPlayer, setTransferModalPlayer] = useState<Player | null>(null)
+  const [transferTargetTeamId, setTransferTargetTeamId] = useState<string>('')
 
   // Get active team details
   const activeTeam = teams.find(t => t.id === selectedTeamId)
@@ -211,8 +224,61 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
     })
   }
 
+  // Release player from squad (Safe - preserves all Season 1 stats and scorecards!)
+  const handleReleasePlayer = async (player: Player) => {
+    const confirmed = confirm(
+      `Release "${player.name}" from ${activeTeam?.name}?\n\n✅ SAFE ACTION: Their Season 1 stats, runs, wickets, and match scorecards will remain 100% PRESERVED.\nThey will be moved to the free agents pool and can be assigned to any team for Season 2.`
+    )
+    if (!confirmed) return
+
+    startTransition(async () => {
+      const result = await releasePlayerFromTeam(player.id)
+      if (result.error) {
+        alert(result.error)
+      } else {
+        window.location.reload()
+      }
+    })
+  }
+
+  // Open transfer modal for a player
+  const openTransferModal = (player: Player) => {
+    setTransferModalPlayer(player)
+    const otherTeams = teams.filter(t => t.id !== selectedTeamId)
+    setTransferTargetTeamId(otherTeams[0]?.id || '')
+  }
+
+  // Execute player transfer
+  const handleTransferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!transferModalPlayer || !transferTargetTeamId) return
+
+    startTransition(async () => {
+      const result = await transferPlayer(transferModalPlayer.id, transferTargetTeamId)
+      if (result.error) {
+        alert(result.error)
+      } else {
+        window.location.reload()
+      }
+    })
+  }
+
+  // Assign existing player from pool to currently selected team
+  const handleAssignExisting = async (player: Player) => {
+    if (!selectedTeamId) return
+
+    startTransition(async () => {
+      const result = await transferPlayer(player.id, selectedTeamId)
+      if (result.error) {
+        alert(result.error)
+      } else {
+        window.location.reload()
+      }
+    })
+  }
+
   const handlePlayerDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete player "${name}"?`)) {
+    if (!confirm(`Are you sure you want to remove player "${name}"?`)) {
       return
     }
 
@@ -221,6 +287,9 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
       if (result.error) {
         alert(result.error)
       } else {
+        if (result.preserved && result.message) {
+          alert(result.message)
+        }
         window.location.reload()
       }
     })
@@ -448,28 +517,57 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
 
             {/* Players List Area */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
-              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-100">
                 <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-blue-600" /> Squad Members
+                  <Users className="w-4 h-4 text-blue-600" /> Squad Members ({squadPlayers.length})
                 </h4>
-                <button
-                  onClick={openAddPlayerModal}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer animate-pulse"
-                >
-                  <UserPlus className="h-3.5 w-3.5" /> Add Player
-                </button>
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      setPoolSearch('')
+                      setIsAssignExistingOpen(true)
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                    title="Pick an existing or released player from another team or free agent pool"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Pick from Pool
+                  </button>
+                  <button
+                    onClick={openAddPlayerModal}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" /> Add Player
+                  </button>
+                </div>
+              </div>
+
+              {/* Season 2 Squad Management Notice */}
+              <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl flex items-start gap-2.5 text-xs text-blue-900">
+                <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="leading-relaxed text-[11px]">
+                  <strong>Season 2 Squad Note:</strong> To change teams, use <span className="font-bold text-blue-700">Release (User icon)</span> or <span className="font-bold text-indigo-700">Transfer</span>. This protects their Season 1 stats, runs, wickets, and match logs so nothing is lost!
+                </p>
               </div>
 
               {squadPlayers.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
                   <ShieldAlert className="h-8 w-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-slate-450 text-xs font-semibold">No players in this team yet.</p>
-                  <button
-                    onClick={openAddPlayerModal}
-                    className="mt-3 text-xs text-blue-600 font-bold hover:underline cursor-pointer"
-                  >
-                    Add the first player
-                  </button>
+                  <div className="mt-3 flex justify-center gap-3">
+                    <button
+                      onClick={() => setIsAssignExistingOpen(true)}
+                      className="text-xs text-emerald-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Pick from League Pool
+                    </button>
+                    <span className="text-slate-300">•</span>
+                    <button
+                      onClick={openAddPlayerModal}
+                      className="text-xs text-blue-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Add new player
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -509,6 +607,25 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-1 flex-shrink-0">
+                          {/* Transfer Player */}
+                          <button
+                            onClick={() => openTransferModal(player)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-650 transition-colors cursor-pointer"
+                            title="Transfer player to another team for Season 2"
+                          >
+                            <ArrowRightLeft className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Release Player (Safe - keeps Season 1 data) */}
+                          <button
+                            onClick={() => handleReleasePlayer(player)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer"
+                            title="Release from squad (Safe - keeps Season 1 stats safe)"
+                          >
+                            <UserMinus className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Edit Player Details */}
                           <button
                             onClick={() => openEditPlayerModal(player)}
                             className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
@@ -516,10 +633,12 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
+
+                          {/* Delete Player */}
                           <button
                             onClick={() => handlePlayerDelete(player.id, player.name)}
                             className="p-1.5 rounded-lg text-slate-405 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer"
-                            title="Delete Player"
+                            title="Remove / Delete Player"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -763,6 +882,179 @@ export default function TeamsManager({ initialTeams }: TeamsManagerProps) {
           </div>
         </div>
       )}
+
+      {/* Transfer Player to Another Team Modal */}
+      {transferModalPlayer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setTransferModalPlayer(null)} />
+
+          <div className="relative bg-white rounded-3xl border border-slate-200 w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <ArrowRightLeft className="w-5 h-5 text-indigo-600" /> Transfer Player
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Transfer <span className="font-extrabold text-slate-800">{transferModalPlayer.name}</span> for Season 2
+                </p>
+              </div>
+              <button
+                onClick={() => setTransferModalPlayer(null)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTransferSubmit} className="space-y-4">
+              <div className="bg-indigo-50/60 border border-indigo-200/70 rounded-xl p-3 text-xs text-indigo-900">
+                <p className="leading-relaxed">
+                  Moving this player to a new team updates their squad affiliation for Season 2. All Season 1 career statistics and past match scorecards remain safe!
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Destination Team *</label>
+                <select
+                  value={transferTargetTeamId}
+                  onChange={(e) => setTransferTargetTeamId(e.target.value)}
+                  className="mt-2 block w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-250 text-slate-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 cursor-pointer"
+                  required
+                >
+                  {teams
+                    .filter((t) => t.id !== selectedTeamId)
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} (Capt: {t.captain_name})
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-slate-100 pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setTransferModalPlayer(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                >
+                  {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  Confirm Transfer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Pick Existing Player from Pool Modal */}
+      {isAssignExistingOpen && activeTeam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsAssignExistingOpen(false)} />
+
+          <div className="relative bg-white rounded-3xl border border-slate-200 w-full max-w-xl p-6 shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4 flex-shrink-0">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-600" /> Assign Player to {activeTeam.name}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Pick unassigned players or transfer from other teams for Season 2
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAssignExistingOpen(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Search Box */}
+            <div className="relative mb-4 flex-shrink-0">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="Search players by name..."
+                value={poolSearch}
+                onChange={(e) => setPoolSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+              />
+            </div>
+
+            {/* Players List */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              {(() => {
+                const available = poolPlayers
+                  .filter((p) => p.team_id !== activeTeam.id)
+                  .filter((p) => p.name.toLowerCase().includes(poolSearch.toLowerCase()))
+
+                if (available.length === 0) {
+                  return (
+                    <div className="text-center py-12 text-slate-400 text-xs font-semibold">
+                      No matching players found in league pool.
+                    </div>
+                  )
+                }
+
+                return available.map((p) => {
+                  const currentTeam = teams.find((t) => t.id === p.team_id)
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-2xl flex items-center justify-between transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center font-black text-xs">
+                          #{p.jersey_number}
+                        </div>
+                        <div>
+                          <p className="font-extrabold text-slate-900 text-xs">{p.name}</p>
+                          <p className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                            <span>{p.role}</span>
+                            <span>•</span>
+                            <span className={currentTeam ? 'text-indigo-600 font-bold' : 'text-emerald-600 font-bold'}>
+                              {currentTeam ? currentTeam.name : 'Free Agent / Pool'}
+                            </span>
+                            <span>•</span>
+                            <span>{p.runs ?? 0} runs, {p.wickets ?? 0} wkts</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleAssignExisting(p)}
+                        disabled={isPending}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Add to Squad
+                      </button>
+                    </div>
+                  )
+                })
+              })()}
+            </div>
+
+            <div className="flex justify-end border-t border-slate-100 pt-3 mt-4 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAssignExistingOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

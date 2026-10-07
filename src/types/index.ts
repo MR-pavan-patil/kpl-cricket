@@ -9,7 +9,7 @@ export interface Team {
 
 export interface Player {
   id: string;
-  team_id: string;
+  team_id: string | null;
   name: string;
   role: string; // 'Batsman' | 'Bowler' | 'All Rounder' | 'Wicket Keeper'
   jersey_number: number;
@@ -18,6 +18,7 @@ export interface Player {
   fours: number;
   sixes: number;
   matches_played: number;
+  is_active?: boolean;
   created_at?: string;
   team?: Team;
 }
@@ -67,6 +68,7 @@ export interface Match {
   current_bowler_id: string | null;
   innings_number: number;
   stage: 'league' | 'quarter_final' | 'semi_final_1' | 'semi_final_2' | 'final';
+  season?: number;
   created_at?: string;
   team1?: Team;
   team2?: Team;
