@@ -60,7 +60,11 @@ export default function MatchesManager({ initialMatches, teams }: MatchesManager
     const t2 = teams.find((t) => t.id === match.team2_id)?.name || ''
     const v = match.venue || ''
     const term = search.toLowerCase()
-    const matchSeason = match.season || 1
+    let matchSeason = match.season || 1
+    if (!match.season && match.match_date) {
+      const d = new Date(match.match_date)
+      if (d.getFullYear() >= 2026 && d.getMonth() >= 9) matchSeason = 2
+    }
     const passesSeason = selectedSeasonFilter === 'all' || String(matchSeason) === selectedSeasonFilter
     return passesSeason && (t1.toLowerCase().includes(term) || t2.toLowerCase().includes(term) || v.toLowerCase().includes(term))
   })

@@ -279,11 +279,22 @@ export default function PublicDashboard({
     }
   }, [teams])
 
+  // Helper to reliably detect match season (checks season column or match date)
+  const getMatchSeason = (m: Match): number => {
+    if (typeof m.season === 'number' && m.season > 0) {
+      return m.season
+    }
+    if (m.match_date) {
+      const d = new Date(m.match_date)
+      if (d.getFullYear() >= 2026 && d.getMonth() >= 9) {
+        return 2 // October 2026 onwards is Season 2
+      }
+    }
+    return 1
+  }
+
   // Filter matches by current season (Default Season 1 for completed matches, Season 2 for new)
-  const seasonMatches = matches.filter((m) => {
-    const mSeason = m.season || 1
-    return mSeason === selectedSeason
-  })
+  const seasonMatches = matches.filter((m) => getMatchSeason(m) === selectedSeason)
 
   const liveMatches = seasonMatches.filter((m) => m.status === 'live')
   const upcomingMatches = seasonMatches.filter((m) => m.status === 'upcoming')
@@ -353,7 +364,7 @@ export default function PublicDashboard({
   )
 
   // Season 1 Winner Detection
-  const season1Matches = matches.filter((m) => (m.season || 1) === 1)
+  const season1Matches = matches.filter((m) => getMatchSeason(m) === 1)
   const season1FinalMatch = season1Matches.find((m) => m.stage === 'final' && m.status === 'completed')
   const season1Winner = season1FinalMatch?.winner_id ? teams.find((t) => t.id === season1FinalMatch.winner_id) : null
 
