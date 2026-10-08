@@ -9,7 +9,7 @@ export default function Header() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const currentSeason = searchParams.get('season') || '1'
+  const currentSeason = searchParams.get('season') || '2'
   const activeTabParam = searchParams.get('tab') || 'overview'
 
   const handleSeasonChange = (s: string) => {

@@ -12,7 +12,7 @@ interface PageProps {
 
 export default async function Home({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : {}
-  const seasonParam = resolvedParams.season ? parseInt(resolvedParams.season, 10) : 1
+  const seasonParam = resolvedParams.season ? parseInt(resolvedParams.season, 10) : 2
   const tabParam = (resolvedParams.tab as any) || 'overview'
 
   let teams: Team[] = []
