@@ -30,7 +30,7 @@ export default async function BracketPage({ searchParams }: PageProps) {
     players = playersData || []
 
     // Fetch matches
-    const { data: matchesData } = await supabase.from('matches').select('*').order('match_date', { ascending: false })
+    const { data: matchesData } = await supabase.from('matches').select('*').order('match_date', { ascending: true })
     const rawMatches = matchesData || []
     matches = rawMatches.map((m: any) => ({
       ...m,

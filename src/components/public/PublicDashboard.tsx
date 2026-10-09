@@ -300,7 +300,11 @@ export default function PublicDashboard({
   }
 
   // Filter matches by current season (Default Season 1 for completed matches, Season 2 for new)
-  const seasonMatches = matches.filter((m) => getMatchSeason(m) === selectedSeason)
+  const seasonMatches = useMemo(() => {
+    return [...matches]
+      .filter((m) => getMatchSeason(m) === selectedSeason)
+      .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime())
+  }, [matches, selectedSeason])
 
   const liveMatches = seasonMatches.filter((m) => m.status === 'live')
   const upcomingMatches = seasonMatches.filter((m) => m.status === 'upcoming')
@@ -930,7 +934,7 @@ export default function PublicDashboard({
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-xs font-black tracking-wider uppercase text-emerald-300">
-                    5 Teams • 10 League Matches + Semifinal + Grand Final • 8 Overs
+                    6 Teams • 15 League Matches + Semifinal + Grand Final • 8 Overs
                   </span>
                 </div>
                 <span className="text-[10px] bg-white/10 px-2.5 py-0.5 rounded-full font-bold text-gray-300">
@@ -940,24 +944,24 @@ export default function PublicDashboard({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div className="bg-white/5 border border-white/10 p-2.5 rounded-xl">
                   <p className="font-bold text-blue-300 text-[11px] uppercase tracking-wider">Day 1 (10 Oct)</p>
-                  <p className="font-semibold text-gray-200">6 League Matches</p>
-                  <p className="text-[10px] text-gray-400">9:00 AM – 4:40 PM</p>
+                  <p className="font-semibold text-gray-200">8 League Matches</p>
+                  <p className="text-[10px] text-gray-400">9:00 AM – 6:20 PM</p>
                 </div>
                 <div className="bg-white/5 border border-white/10 p-2.5 rounded-xl">
                   <p className="font-bold text-blue-300 text-[11px] uppercase tracking-wider">Day 2 (11 Oct)</p>
-                  <p className="font-semibold text-gray-200">4 League Matches + Semifinal</p>
-                  <p className="text-[10px] text-gray-400">9:00 AM – 3:30 PM (#2 vs #3 at 2:30 PM)</p>
+                  <p className="font-semibold text-gray-200">7 League Matches</p>
+                  <p className="text-[10px] text-gray-400">9:00 AM – 5:10 PM (Points Table Lock)</p>
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
                   <p className="font-bold text-amber-300 text-[11px] uppercase tracking-wider">Day 3 (12 Oct)</p>
-                  <p className="font-semibold text-amber-100">GRAND FINAL ONLY</p>
-                  <p className="text-[10px] text-amber-300/80">9:00 AM – 10:00 AM (#1 vs SF Winner)</p>
+                  <p className="font-semibold text-amber-100">Semifinal + Grand Final</p>
+                  <p className="text-[10px] text-amber-300/80">9:00 AM SF • 12:00 PM Final • 1:00 PM Trophy</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-blue-200/90 bg-blue-500/10 p-2 rounded-lg border border-blue-400/20">
                 <AlertCircle className="w-4 h-4 text-blue-300 flex-shrink-0" />
                 <span>
-                  <strong>Playoff Rule:</strong> League topper (#1) directly qualifies for the Final. #2 and #3 play the Semifinal on 11 Oct. Semifinal and Final teams are determined automatically after all 10 League Matches finish.
+                  <strong>Playoff Rule:</strong> League topper (#1) directly qualifies for the Grand Final. #2 and #3 play the Semifinal on 12 Oct (9:00 AM). Semifinal winner gets a 2-hour rest before the 12:00 PM Final against #1.
                 </span>
               </div>
             </div>
@@ -966,18 +970,18 @@ export default function PublicDashboard({
           {/* Season 2 Structured 3-Day Layout */}
           {selectedSeason === 2 ? (
             <div className="space-y-8">
-              {/* ===== DAY 1 (10 Oct) ===== */}
+              {/* ===== DAY 1 (10 Oct) — 8 League Matches ===== */}
               {(scheduleDayFilter === 'all' || scheduleDayFilter === '1') && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between bg-blue-50/80 border border-blue-200 p-3 rounded-xl">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-blue-600" />
                       <h4 className="font-black text-xs uppercase tracking-wider text-blue-900">
-                        DAY 1 — 10 October 2026 | 6 League Matches
+                        DAY 1 — 10 October 2026 | 8 League Matches
                       </h4>
                     </div>
                     <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-                      9:00 AM – 4:40 PM • 8 Overs
+                      9:00 AM – 6:20 PM • 8 Overs
                     </span>
                   </div>
 
@@ -1021,7 +1025,7 @@ export default function PublicDashboard({
                     {/* Break 1 */}
                     <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
                       <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>10:00 AM – 10:20 AM • 20 min Break</span>
+                      <span>10:00 AM – 10:10 AM • 10 min Break</span>
                     </div>
 
                     {/* Match 2 */}
@@ -1038,7 +1042,7 @@ export default function PublicDashboard({
                               Match 2 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 10:20 AM – 11:20 AM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 10:10 AM – 11:10 AM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1063,7 +1067,7 @@ export default function PublicDashboard({
                     {/* Break 2 */}
                     <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
                       <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>11:20 AM – 11:40 AM • 20 min Break</span>
+                      <span>11:10 AM – 11:20 AM • 10 min Break</span>
                     </div>
 
                     {/* Match 3 */}
@@ -1080,7 +1084,7 @@ export default function PublicDashboard({
                               Match 3 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 11:40 AM – 12:40 PM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 11:20 AM – 12:20 PM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1105,7 +1109,7 @@ export default function PublicDashboard({
                     {/* Lunch Break */}
                     <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold shadow-sm">
                       <Coffee className="w-4 h-4 text-amber-700" />
-                      <span>12:40 PM – 1:00 PM • Lunch Break 🍱</span>
+                      <span>12:20 PM – 12:40 PM • Lunch Break 🍱 (20 min)</span>
                     </div>
 
                     {/* Match 4 */}
@@ -1122,7 +1126,7 @@ export default function PublicDashboard({
                               Match 4 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 1:00 PM – 2:00 PM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 12:40 PM – 1:40 PM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1132,7 +1136,7 @@ export default function PublicDashboard({
                               <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
                             </div>
                             <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team2?.name || 'Tiger Force'}</span>
+                              <span>{m?.team2?.name || 'DSS'}</span>
                               <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
                             </div>
                           </div>
@@ -1147,7 +1151,7 @@ export default function PublicDashboard({
                     {/* Break 4 */}
                     <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
                       <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>2:00 PM – 2:20 PM • 20 min Break</span>
+                      <span>1:40 PM – 1:50 PM • 10 min Break</span>
                     </div>
 
                     {/* Match 5 */}
@@ -1164,157 +1168,7 @@ export default function PublicDashboard({
                               Match 5 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 2:20 PM – 3:20 PM
-                            </span>
-                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
-                          </div>
-                          <div className="py-3 space-y-2">
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team1?.name || 'Kesari Dhurandars'}</span>
-                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
-                            </div>
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team2?.name || 'Kosam Tiger'}</span>
-                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
-                            </div>
-                          </div>
-                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
-                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
-                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
-                          </div>
-                        </div>
-                      )
-                    })()}
-
-                    {/* Break 5 */}
-                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
-                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>3:20 PM – 3:40 PM • 20 min Break</span>
-                    </div>
-
-                    {/* Match 6 */}
-                    {(() => {
-                      const m = seasonMatches[5]
-                      return (
-                        <div
-                          key="m6"
-                          onClick={() => m && setSelectedMatch(m)}
-                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
-                        >
-                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
-                            <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                              Match 6 • 8 Overs
-                            </span>
-                            <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 3:40 PM – 4:40 PM
-                            </span>
-                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
-                          </div>
-                          <div className="py-3 space-y-2">
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team1?.name || 'SBI Kosam'}</span>
-                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
-                            </div>
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team2?.name || 'Tiger Force'}</span>
-                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
-                            </div>
-                          </div>
-                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
-                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
-                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
-                          </div>
-                        </div>
-                      )
-                    })()}
-
-                    {/* Day 1 Wrap Box */}
-                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl flex items-center justify-between text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>Day 1 Khatam — 4:40 PM | 6 League Matches Done!</span>
-                      </div>
-                      <span className="text-[11px] font-normal text-emerald-700 hidden sm:inline">
-                        Koi bhi team back-to-back nahi kheli — sabko proper gap mila!
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ===== DAY 2 (11 Oct) ===== */}
-              {(scheduleDayFilter === 'all' || scheduleDayFilter === '2') && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-indigo-50/80 border border-indigo-200 p-3 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-indigo-600" />
-                      <h4 className="font-black text-xs uppercase tracking-wider text-indigo-900">
-                        DAY 2 — 11 October 2026 | 4 League Matches + Semifinal
-                      </h4>
-                    </div>
-                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-full">
-                      9:00 AM – 3:30 PM • 8 Overs
-                    </span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Match 7 */}
-                    {(() => {
-                      const m = seasonMatches[6]
-                      return (
-                        <div
-                          key="m7"
-                          onClick={() => m && setSelectedMatch(m)}
-                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
-                        >
-                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
-                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-                              Match 7 • 8 Overs
-                            </span>
-                            <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 9:00 AM – 10:00 AM
-                            </span>
-                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
-                          </div>
-                          <div className="py-3 space-y-2">
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team1?.name || 'PSB'}</span>
-                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
-                            </div>
-                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
-                              <span>{m?.team2?.name || 'Kesari Dhurandars'}</span>
-                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
-                            </div>
-                          </div>
-                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
-                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
-                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
-                          </div>
-                        </div>
-                      )
-                    })()}
-
-                    {/* Break 7 */}
-                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
-                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>10:00 AM – 10:20 AM • 20 min Break</span>
-                    </div>
-
-                    {/* Match 8 */}
-                    {(() => {
-                      const m = seasonMatches[7]
-                      return (
-                        <div
-                          key="m8"
-                          onClick={() => m && setSelectedMatch(m)}
-                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
-                        >
-                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
-                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-                              Match 8 • 8 Overs
-                            </span>
-                            <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 10:20 AM – 11:20 AM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 1:50 PM – 2:50 PM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1336,27 +1190,27 @@ export default function PublicDashboard({
                       )
                     })()}
 
-                    {/* Break 8 */}
+                    {/* Break 5 */}
                     <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
                       <Coffee className="w-3.5 h-3.5 text-amber-600" />
-                      <span>11:20 AM – 11:40 AM • 20 min Break</span>
+                      <span>2:50 PM – 3:00 PM • 10 min Break</span>
                     </div>
 
-                    {/* Match 9 */}
+                    {/* Match 6 */}
                     {(() => {
-                      const m = seasonMatches[8]
+                      const m = seasonMatches[5]
                       return (
                         <div
-                          key="m9"
+                          key="m6"
                           onClick={() => m && setSelectedMatch(m)}
                           className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
                         >
                           <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
-                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-                              Match 9 • 8 Overs
+                            <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                              Match 6 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 11:40 AM – 12:40 PM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 3:00 PM – 4:00 PM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1378,10 +1232,160 @@ export default function PublicDashboard({
                       )
                     })()}
 
-                    {/* Lunch Break */}
-                    <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold shadow-sm">
-                      <Coffee className="w-4 h-4 text-amber-700" />
-                      <span>12:40 PM – 1:00 PM • Lunch Break 🍱</span>
+                    {/* Break 6 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>4:00 PM – 4:10 PM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 7 */}
+                    {(() => {
+                      const m = seasonMatches[6]
+                      return (
+                        <div
+                          key="m7"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                              Match 7 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 4:10 PM – 5:10 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'PSB'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'Tiger Force'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Break 7 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>5:10 PM – 5:20 PM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 8 */}
+                    {(() => {
+                      const m = seasonMatches[7]
+                      return (
+                        <div
+                          key="m8"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                              Match 8 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 5:20 PM – 6:20 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'Kesari Dhurandars'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'DSS'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Day 1 Wrap Box */}
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl flex items-center justify-between text-xs font-bold">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Day 1 Khatam — 6:20 PM | 8 Matches Done!</span>
+                      </div>
+                      <span className="text-[11px] font-normal text-emerald-700 hidden sm:inline">
+                        Koi bhi team back-to-back nahi kheli — sabko proper gap mila!
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== DAY 2 (11 Oct) — 7 League Matches ===== */}
+              {(scheduleDayFilter === 'all' || scheduleDayFilter === '2') && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-indigo-50/80 border border-indigo-200 p-3 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-indigo-600" />
+                      <h4 className="font-black text-xs uppercase tracking-wider text-indigo-900">
+                        DAY 2 — 11 October 2026 | 7 League Matches
+                      </h4>
+                    </div>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-full">
+                      9:00 AM – 5:10 PM • 8 Overs
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Match 9 */}
+                    {(() => {
+                      const m = seasonMatches[8]
+                      return (
+                        <div
+                          key="m9"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 9 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 9:00 AM – 10:00 AM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'SBI Kosam'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'Tiger Force'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Break 9 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>10:00 AM – 10:10 AM • 10 min Break</span>
                     </div>
 
                     {/* Match 10 */}
@@ -1395,10 +1399,10 @@ export default function PublicDashboard({
                         >
                           <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
                             <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-                              Match 10 (Last League Match) • 8 Overs
+                              Match 10 • 8 Overs
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-gray-700">
-                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 1:00 PM – 2:00 PM
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 10:10 AM – 11:10 AM
                             </span>
                             <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
                           </div>
@@ -1420,36 +1424,265 @@ export default function PublicDashboard({
                       )
                     })()}
 
-                    {/* 2:00 PM - 2:30 PM Points Table Evaluation Box */}
-                    <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 rounded-2xl border border-blue-700/50 space-y-2 shadow-sm">
+                    {/* Break 10 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>11:10 AM – 11:20 AM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 11 */}
+                    {(() => {
+                      const m = seasonMatches[10]
+                      return (
+                        <div
+                          key="m11"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 11 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 11:20 AM – 12:20 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'Tiger Force'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'DSS'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Lunch Break */}
+                    <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold shadow-sm">
+                      <Coffee className="w-4 h-4 text-amber-700" />
+                      <span>12:20 PM – 12:40 PM • Lunch Break 🍱 (20 min)</span>
+                    </div>
+
+                    {/* Match 12 */}
+                    {(() => {
+                      const m = seasonMatches[11]
+                      return (
+                        <div
+                          key="m12"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 12 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 12:40 PM – 1:40 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'Kesari Dhurandars'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'Kosam Tiger'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Break 12 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>1:40 PM – 1:50 PM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 13 */}
+                    {(() => {
+                      const m = seasonMatches[12]
+                      return (
+                        <div
+                          key="m13"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 13 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 1:50 PM – 2:50 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'SBI Kosam'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'DSS'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Break 13 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>2:50 PM – 3:00 PM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 14 */}
+                    {(() => {
+                      const m = seasonMatches[13]
+                      return (
+                        <div
+                          key="m14"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 14 • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 3:00 PM – 4:00 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'PSB'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'Kesari Dhurandars'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Break 14 */}
+                    <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-600 text-[11px] font-semibold">
+                      <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                      <span>4:00 PM – 4:10 PM • 10 min Break</span>
+                    </div>
+
+                    {/* Match 15 */}
+                    {(() => {
+                      const m = seasonMatches[14]
+                      return (
+                        <div
+                          key="m15"
+                          onClick={() => m && setSelectedMatch(m)}
+                          className="p-4 sm:p-5 rounded-2xl bg-white border border-gray-200 hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer group"
+                        >
+                          <div className="flex justify-between items-center text-xs text-gray-500 pb-2 border-b border-gray-100">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              Match 15 (Final League Match) • 8 Overs
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-gray-700">
+                              <Clock className="w-3.5 h-3.5 text-blue-600" /> 4:10 PM – 5:10 PM
+                            </span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Kosam Ground</span>
+                          </div>
+                          <div className="py-3 space-y-2">
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team1?.name || 'Kosam Tiger'}</span>
+                              <span className="text-blue-600">{m ? `${m.team1_runs}/${m.team1_wickets}` : '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-extrabold text-sm sm:text-base text-gray-900">
+                              <span>{m?.team2?.name || 'DSS'}</span>
+                              <span className="text-indigo-600">{m ? `${m.team2_runs}/${m.team2_wickets}` : '-'}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
+                            <span>{m?.result_desc || m?.status.toUpperCase() || 'SCHEDULED'}</span>
+                            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">Scorecard Details &rarr;</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Day 2 Conclusion & Cutoff Box */}
+                    <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 sm:p-5 rounded-2xl border border-blue-700/50 space-y-2 shadow-sm">
                       <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-blue-200">
                         <span className="flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4 text-amber-400" /> 2:00 PM – 2:30 PM: Points Table Calculation & Cutoff
+                          <BarChart3 className="w-4 h-4 text-amber-400" /> Day 2 Khatam — 5:10 PM | Points Table Calculate Hoga!
                         </span>
                         <span className="bg-amber-400 text-blue-950 px-2 py-0.5 rounded-md font-black text-[10px]">
                           Playoffs Lock
                         </span>
                       </div>
                       <p className="text-xs text-blue-100 font-medium">
-                        League stage khatam hone ke baad Points Table se <strong>Top 3 Teams</strong> decide hongi:
+                        League stage ke 15 matches complete! Points Table se <strong>Top 3 Teams</strong> decide hongi:
                       </p>
                       <ul className="text-xs text-blue-200 space-y-1 list-disc list-inside">
-                        <li><strong>#1 Team (League Topper):</strong> Seedha 12 October Grand Final mein qualify karegi!</li>
-                        <li><strong>#2 aur #3 Teams:</strong> Neeche diye gaye 2:30 PM Semi-Final match mein khelenge!</li>
+                        <li><strong>#1 Team (League Topper):</strong> Seedha Day 3 Grand Final (12:00 PM) mein wait karegi!</li>
+                        <li><strong>#2 aur #3 Teams:</strong> Day 3 subah 9:00 AM Semifinal mein khelenge!</li>
                       </ul>
                     </div>
+                  </div>
+                </div>
+              )}
 
-                    {/* SEMIFINAL MATCH (Match 11) */}
+              {/* ===== DAY 3 (12 Oct) — Semifinal + Final ===== */}
+              {(scheduleDayFilter === 'all' || scheduleDayFilter === '3') && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-amber-50/80 border border-amber-300 p-3 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-amber-600 fill-amber-400" />
+                      <h4 className="font-black text-xs uppercase tracking-wider text-amber-900">
+                        DAY 3 — 12 October 2026 | SEMIFINAL + GRAND FINAL
+                      </h4>
+                    </div>
+                    <span className="text-[11px] font-black text-amber-900 bg-amber-200 px-3 py-0.5 rounded-full">
+                      9:00 AM – 1:00 PM • 8 Overs
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* SEMIFINAL (Match 16) */}
                     <div
                       onClick={() => sfMatch && setSelectedMatch(sfMatch)}
                       className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-white via-blue-50/40 to-indigo-50/60 border-2 border-blue-400/80 hover:border-blue-600 hover:shadow-lg transition-all cursor-pointer group space-y-3"
                     >
                       <div className="flex justify-between items-center text-xs pb-2 border-b border-blue-100">
                         <span className="font-black text-white bg-blue-600 px-3 py-1 rounded-lg text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5" /> SEMIFINAL (Match 11) • 8 Overs
+                          <Users className="w-3.5 h-3.5" /> SEMIFINAL (Match 16) • 8 Overs
                         </span>
                         <span className="flex items-center gap-1 font-bold text-gray-800">
-                          <Clock className="w-3.5 h-3.5 text-blue-600" /> 2:30 PM – 3:30 PM • 11 Oct
+                          <Clock className="w-3.5 h-3.5 text-blue-600" /> 9:00 AM – 10:00 AM • 12 Oct
                         </span>
                       </div>
 
@@ -1476,45 +1709,21 @@ export default function PublicDashboard({
 
                       <div className="pt-2.5 border-t border-blue-100 flex justify-between items-center text-xs font-bold text-blue-900">
                         <span className="text-blue-700">
-                          {sfMatch?.result_desc || 'Jo jitega woh 12 Oct Final mein seedha #1 team se khelega!'}
+                          {sfMatch?.result_desc || 'Jo jitega woh FINAL mein jayega — #1 team already wait kar rahi hai!'}
                         </span>
                         <span className="text-blue-600 group-hover:translate-x-1 transition-transform">
-                          {sfMatch ? 'Scorecard Details &rarr;' : 'Decided after Match 10 &rarr;'}
+                          {sfMatch ? 'Scorecard Details &rarr;' : 'Live on 12 Oct 9:00 AM &rarr;'}
                         </span>
                       </div>
                     </div>
 
-                    {/* Day 2 Wrap Box */}
-                    <div className="bg-indigo-50 border border-indigo-200 text-indigo-900 p-3.5 rounded-xl flex items-center justify-between text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-indigo-600" />
-                        <span>Day 2 Khatam — 3:30 PM | League Complete + Semifinal Done!</span>
-                      </div>
-                      <span className="text-[11px] font-normal text-indigo-700 hidden sm:inline">
-                        Kal sirf FINAL — #1 Team vs SF Winner!
-                      </span>
+                    {/* 2-Hour Rest & Lunch Break */}
+                    <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-900 text-xs font-bold shadow-sm">
+                      <Coffee className="w-4 h-4 text-amber-700" />
+                      <span>10:00 AM – 12:00 PM • Lunch Break &amp; 2 Hours Rest for Semifinal Winner 🍱</span>
                     </div>
-                  </div>
-                </div>
-              )}
 
-              {/* ===== DAY 3 (12 Oct) ===== */}
-              {(scheduleDayFilter === 'all' || scheduleDayFilter === '3') && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-amber-50/80 border border-amber-300 p-3 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-amber-600 fill-amber-400" />
-                      <h4 className="font-black text-xs uppercase tracking-wider text-amber-900">
-                        DAY 3 — 12 October 2026 | GRAND FINAL ONLY
-                      </h4>
-                    </div>
-                    <span className="text-[11px] font-black text-amber-900 bg-amber-200 px-3 py-0.5 rounded-full">
-                      9:00 AM – 10:00 AM • 8 Overs
-                    </span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* GRAND FINAL CARD */}
+                    {/* GRAND FINAL CARD (Match 17) */}
                     <div
                       onClick={() => finalMatch && setSelectedMatch(finalMatch)}
                       className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-amber-50 via-white to-amber-100/60 border-2 border-amber-400 shadow-md hover:border-amber-500 hover:shadow-xl transition-all cursor-pointer group space-y-4 relative overflow-hidden"
@@ -1522,10 +1731,10 @@ export default function PublicDashboard({
                       <div className="flex justify-between items-center text-xs pb-2 border-b border-amber-200">
                         <span className="font-black text-amber-950 bg-amber-400 px-3.5 py-1 rounded-xl text-xs uppercase tracking-wider shadow-sm flex items-center gap-1.5">
                           <Crown className="w-4 h-4 text-amber-950 fill-amber-950" />
-                          GRAND FINAL (Match 12) • 8 Overs
+                          GRAND FINAL (Match 17) • 8 Overs
                         </span>
                         <span className="flex items-center gap-1 font-black text-amber-900">
-                          <Clock className="w-3.5 h-3.5 text-amber-600" /> 9:00 AM – 10:00 AM • 12 Oct
+                          <Clock className="w-3.5 h-3.5 text-amber-600" /> 12:00 PM – 1:00 PM • 12 Oct
                         </span>
                       </div>
 
@@ -1555,7 +1764,7 @@ export default function PublicDashboard({
                           {grandChampion ? `🏆 KPL SEASON 2 CHAMPION: ${grandChampion.name}` : finalMatch?.result_desc || 'KPL SEASON 2 CHAMPION DECIDED! Winner lifts the Trophy.'}
                         </span>
                         <span className="text-amber-800 group-hover:translate-x-1 transition-transform">
-                          {finalMatch ? 'Scorecard Details &rarr;' : 'Live on 12 Oct &rarr;'}
+                          {finalMatch ? 'Scorecard Details &rarr;' : 'Live on 12 Oct 12:00 PM &rarr;'}
                         </span>
                       </div>
                     </div>
@@ -1565,9 +1774,9 @@ export default function PublicDashboard({
                       <div className="flex items-center gap-3">
                         <Trophy className="w-8 h-8 text-amber-950 flex-shrink-0" />
                         <div>
-                          <p className="text-sm uppercase tracking-wide">Tournament Khatam — 10:00 AM | Grand Prize Distribution!</p>
+                          <p className="text-sm uppercase tracking-wide">Tournament Khatam — 1:00 PM | Grand Prize Distribution!</p>
                           <p className="text-xs font-semibold text-amber-900">
-                            Winner Trophy, Runner-Up, Orange Cap (Most Runs), Purple Cap (Most Wickets) & Player of Tournament!
+                            Winner Trophy, Runner-Up, Orange Cap (Most Runs), Purple Cap (Most Wickets) &amp; Player of Tournament!
                           </p>
                         </div>
                       </div>
@@ -1995,7 +2204,7 @@ export default function PublicDashboard({
           <div className="flex items-center gap-2.5 text-xs text-blue-900 bg-blue-50/90 border border-blue-200/80 p-3.5 rounded-2xl shadow-sm">
             <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
             <p>
-              <strong>Playoff Lock Notice:</strong> Semifinal (#2 vs #3) aur Grand Final (#1 vs SF Winner) ke teams 11 October ko Match 10 khatam hone ke baad (2:00 PM – 2:30 PM) Points Table se finalize honge.
+              <strong>Playoff Lock Notice:</strong> Day 2 (11 Oct) ke Match 15 (5:10 PM) ke baad Points Table se Top 3 Teams finalize hongi: #1 direct Grand Final (12:00 PM) mein jayega, aur #2 vs #3 Day 3 subah 9:00 AM Semifinal khelenge.
             </p>
           </div>
 
@@ -2030,7 +2239,7 @@ export default function PublicDashboard({
               >
                 <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase pb-1 border-b border-gray-100">
                   <span className="text-blue-700 font-extrabold flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> 11 Oct • 2:30 PM – 3:30 PM
+                    <Clock className="w-3 h-3" /> 12 Oct • 9:00 AM – 10:00 AM
                   </span>
                   <span className="text-blue-600 font-black">{sfMatch?.status.toUpperCase() || 'SCHEDULED (8 OVERS)'}</span>
                 </div>
@@ -2054,7 +2263,7 @@ export default function PublicDashboard({
                 </div>
 
                 <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs font-bold text-gray-500">
-                  <span>{sfMatch?.result_desc || 'Winner advances to Grand Final on 12 Oct'}</span>
+                  <span>{sfMatch?.result_desc || 'Winner gets 2 hr rest then plays Final @ 12:00 PM'}</span>
                   <span className="text-blue-600 group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </div>
               </div>
@@ -2077,7 +2286,7 @@ export default function PublicDashboard({
               >
                 <div className="flex justify-between items-center text-[10px] text-amber-800 font-black uppercase pb-1 border-b border-amber-200">
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-amber-700" /> 12 Oct • 9:00 AM – 10:00 AM
+                    <Clock className="w-3 h-3 text-amber-700" /> 12 Oct • 12:00 PM – 1:00 PM
                   </span>
                   <span className="text-amber-800">{finalMatch?.status.toUpperCase() || 'SCHEDULED (8 OVERS)'}</span>
                 </div>
@@ -2101,7 +2310,7 @@ export default function PublicDashboard({
                 </div>
 
                 <div className="pt-3 border-t border-amber-200 flex justify-between items-center text-xs font-bold text-amber-800">
-                  <span>{grandChampion ? `🎉 Champion: ${grandChampion.name}` : finalMatch?.result_desc || 'Winner takes KPL Trophy • Prize Ceremony @ 10:00 AM'}</span>
+                  <span>{grandChampion ? `🎉 Champion: ${grandChampion.name}` : finalMatch?.result_desc || 'Winner takes KPL Trophy • Prize Ceremony @ 1:00 PM'}</span>
                   <span className="text-amber-800 group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </div>
               </div>
